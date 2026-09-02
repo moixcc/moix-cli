@@ -2,14 +2,17 @@
 name = "moix-cli"
 version = "0.0.1"
 edition = "2024"
+authors = ["Moix Dev <dev@moix.cc>"]
+description = "Create a compressed (brotli) version of index.html with svg, javascript, css and embedded templates."
+repository = "https://github.com/moixcc/moix-cli"
+categories = ["development-tools", "command-line-utilities", "web-programming"]
+readme = "README.md"
+license = "MIT"
 
-[dependencies]
-base64 = "0.23"
-brotli = "9.0"
-dotenvy = "0.15"
-html-minifier = "5.0"
-minreq = { version = "3.0", features = ["https-native-tls"] }
-walkdir = "2.5"
+[[bin]]
+name = "moix"
+path = "src/main.rs"
+doc = false
 
 [profile.release]
 opt-level = "z"
@@ -18,3 +21,11 @@ codegen-units = 1
 panic = "abort"
 strip = true
 overflow-checks = false
+
+[dependencies]
+base64 = "0.23"
+brotli = "9.0"
+dotenvy = "0.15"
+html-minifier = "5.0"
+minreq = { version = "3.0", features = ["https-native-tls"] }
+walkdir = "2.5"

@@ -23,8 +23,6 @@ pub fn handle(path: std::path::PathBuf) {
             let _ = fs::write(path_file, get_content(file_name));
         }
     }
-
-    crate::exit();
 }
 
 fn get_content(file_name: &str) -> &'static str {
