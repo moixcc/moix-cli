@@ -1,0 +1,10 @@
+# Moix Client
+
+Create a compressed (zstd) version of index.html with svg, javascript, css and embedded templates.
+
+``bash
+moix init ./test
+moix build ./test
+moix dev ./test
+```
+
