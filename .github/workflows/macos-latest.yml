@@ -1,14 +1,14 @@
 on:
   push:
     branches:
-      - main
+      - dev
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
-    runs-on: windows-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
         run: cargo build --release
 
       - name: Application
-        run: cp target/release/moix.exe ./moix-windows.exe
+        run: cp target/release/moix ./moix-macos
       
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -32,6 +32,6 @@ jobs:
           tag_name: latest
           name: latest
           prerelease: false
-          files: moix-windows.exe
+          files: moix-macos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
