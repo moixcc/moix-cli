@@ -29,7 +29,7 @@ fn get_content(file_name: &str) -> &'static str {
     match file_name {
         ".env" => "DEPLOY_URL=\"https://api.moix.cc\"\nDEPLOY_TOKEN=\"\"",
         ".gitignore" => "index.bin\ndata\n.env",
-        "dist/icons.svg" => "<svg></svg>",
+        "dist/icons.svg" => "<svg style=\"display:none;\"></svg>",
         "dist/css/1_style.css" => "body{text-align:center;}",
         "dist/js/1_script.js" => "console.log('WWW.MOIX.CC');",
         "dist/index.html" => {
