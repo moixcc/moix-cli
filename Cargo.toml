@@ -4,8 +4,8 @@ version = "0.0.1"
 edition = "2024"
 authors = ["Moix Dev <dev@moix.cc>"]
 description = "Create a compressed (brotli) version of index.html with svg, javascript, css and embedded templates."
-repository = "https://github.com/moixcc/moix-cli"
 categories = ["development-tools", "command-line-utilities", "web-programming"]
+repository = "https://github.com/moixcc/moix-cli"
 readme = "README.md"
 license = "MIT"
 

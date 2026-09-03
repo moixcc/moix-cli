@@ -10,8 +10,22 @@ moix dev ./test
 # http://localhost:8080
 ```
 
-## Application installation
+## Installation
+
+### Production
+
+```bash
+cargo install moix-cli
+```
+
+### Testing
 
 ```bash
 cargo install --git https://github.com/moixcc/moix-cli
+```
+
+### Development
+
+```bash
+cargo install --git https://github.com/moixcc/moix-cli --branch dev
 ```
