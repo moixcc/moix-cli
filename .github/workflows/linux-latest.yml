@@ -1,4 +1,4 @@
-name: Ubuntu latest
+name: Linux latest
 
 on:
   push:
@@ -26,8 +26,7 @@ jobs:
         run: cargo build --release
 
       - name: Application
-        run: |
-          cp target/release/moix-cli ./moix-ubuntu
+        run: cp target/release/moix ./moix-linux
       
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -35,6 +34,6 @@ jobs:
           tag_name: latest
           name: Release
           prerelease: false
-          files: moix-ubuntu
+          files: moix-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
