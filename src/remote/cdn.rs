@@ -1,10 +1,15 @@
 pub fn handle(path: std::path::PathBuf, args: Vec<String>) {
     let uri = args.get(3).expect("uri error");
-    let mimetype = args.get(4).expect("mimetype error");
+
+    let config = crate::utils::Config::new(&path);
+
+    let path_file = path.join("cdn").join(uri);
+
+    let mimetype = config.get_mimetype(&path_file);
 
     println!("moix cdn {} /cdn/{} {}", path.display(), uri, mimetype);
 
-    let file_bytes = std::fs::read(path.join("cdn").join(uri)).expect("file error");
+    let file_bytes = std::fs::read(path_file).expect("file error");
 
     let (url, token) = super::get_env_deploy(&path);
 

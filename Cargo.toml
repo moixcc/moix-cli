@@ -1,6 +1,6 @@
 [package]
 name = "moix-cli"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2024"
 authors = ["Moix Dev <dev@moix.cc>"]
 description = "Create a compressed (Brotli) version of index.html with SVG, JavaScript, CSS and Templates."

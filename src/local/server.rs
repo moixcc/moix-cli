@@ -1,24 +1,18 @@
 use std::fs;
 use tiny_http::{Header, Method, Response};
 
-#[derive(Debug, Default, serde::Deserialize)]
-struct Config {
-    mimetype: std::collections::HashMap<String, String>,
-}
-
 pub fn handle(path: std::path::PathBuf) {
     println!("moix dev {}\nhttp://localhost:8080", path.display());
 
-    // Starting
+    // Config
     let server = tiny_http::Server::http("0.0.0.0:8080").unwrap();
     let index_path = path.join("index.bin");
-    let config_str = fs::read_to_string(path.join("config.toml")).unwrap_or_default();
-    let config = toml::from_str::<Config>(&config_str).unwrap_or_default();
+    let config = crate::utils::Config::new(&path);
 
     // Requests
     for request in server.incoming_requests() {
         let bytes: Vec<u8>;
-        let mut content_type = "text/plain";
+        let content_type: String;
         let mut content_encoding: &str = "";
 
         match (request.method(), request.url()) {
@@ -32,19 +26,12 @@ pub fn handle(path: std::path::PathBuf) {
                 let path_cdn = path.join(u.trim_start_matches('/'));
 
                 bytes = fs::read(&path_cdn).expect("cdn error");
-
-                if let Some(path_ext) = path_cdn.extension() {
-                    if let Some(mimetype) =
-                        config.mimetype.get(path_ext.to_str().unwrap_or_default())
-                    {
-                        content_type = mimetype;
-                    };
-                }
+                content_type = config.get_mimetype(&path_cdn);
             }
             // All Request GET => index.bin
             (Method::Get, _) => {
                 bytes = fs::read(&index_path).expect("index.bin error");
-                content_type = "text/html; charset=UTF-8";
+                content_type = "text/html; charset=UTF-8".into();
                 content_encoding = "br";
             }
             // Request default
