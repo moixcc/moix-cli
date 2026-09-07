@@ -1,73 +1,74 @@
-use std::{
-    fs,
-    io::{Read, Write},
-};
+use std::fs;
+use tiny_http::{Header, Method, Response};
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct Config {
+    mimetype: std::collections::HashMap<String, String>,
+}
 
 pub fn handle(path: std::path::PathBuf) {
     println!("moix dev {}\nhttp://localhost:8080", path.display());
 
-    let path_index = path.join("index.bin");
+    // Starting
+    let server = tiny_http::Server::http("0.0.0.0:8080").unwrap();
+    let index_path = path.join("index.bin");
+    let config_str = fs::read_to_string(path.join("config.toml")).unwrap_or_default();
+    let config = toml::from_str::<Config>(&config_str).unwrap_or_default();
 
-    let listener = match std::net::TcpListener::bind("0.0.0.0:8080") {
-        Ok(l) => l,
-        Err(e) => {
-            eprintln!("listener {e}");
+    // Requests
+    for request in server.incoming_requests() {
+        let bytes: Vec<u8>;
+        let mut content_type = "text/plain";
+        let mut content_encoding: &str = "";
 
-            return crate::exit();
+        match (request.method(), request.url()) {
+            // No favicon.ico
+            (Method::Get, "/favicon.ico") => {
+                let _ = request.respond(Response::empty(404));
+                continue;
+            }
+            // CDN
+            (m, u) if m == &Method::Get && u.starts_with("/cdn/") => {
+                let path_cdn = path.join(u.trim_start_matches('/'));
+
+                bytes = fs::read(&path_cdn).expect("cdn error");
+
+                if let Some(path_ext) = path_cdn.extension() {
+                    if let Some(mimetype) =
+                        config.mimetype.get(path_ext.to_str().unwrap_or_default())
+                    {
+                        content_type = mimetype;
+                    };
+                }
+            }
+            // All Request GET => index.bin
+            (Method::Get, _) => {
+                bytes = fs::read(&index_path).expect("index.bin error");
+                content_type = "text/html; charset=UTF-8";
+                content_encoding = "br";
+            }
+            // Request default
+            _ => {
+                let _ = request.respond(Response::empty(400));
+                continue;
+            }
         }
-    };
 
-    for stream in listener.incoming() {
-        let mut stream = match stream {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("stream {e}");
-
-                continue;
-            }
-        };
-
-        let mut buffer = [0u8; 1024];
-        match stream.read(&mut buffer) {
-            Ok(0) => continue,
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("read {e}");
-
-                continue;
-            }
-        };
-
-        let index_bytes = match fs::read(&path_index) {
-            Ok(b) => b,
-            Err(e) => {
-                eprintln!("index read {e}");
-
-                continue;
-            }
-        };
-
-        let response = format!(
-            "HTTP/1.1 200 OK\r\n\
-             Content-Type: text/html; charset=UTF-8\r\n\
-             Content-Encoding: br\r\n\
-             Content-Length: {}\r\n\
-             Connection: close\r\n\r\n",
-            index_bytes.len()
-        );
-
-        if let Err(e) = stream.write_all(response.as_bytes()) {
-            eprintln!("write response {e}");
-
+        // Response
+        if bytes.is_empty() {
             continue;
         }
 
-        if let Err(e) = stream.write_all(&index_bytes) {
-            eprintln!("write index_bin {e}");
+        let mut response = Response::from_data(bytes);
 
-            continue;
+        response.add_header(Header::from_bytes(b"Content-Type", content_type.as_bytes()).unwrap());
+
+        if !content_encoding.is_empty() {
+            response.add_header(
+                Header::from_bytes(b"Content-Encoding", content_encoding.as_bytes()).unwrap(),
+            );
         }
 
-        let _ = stream.flush();
+        let _ = request.respond(response);
     }
 }
