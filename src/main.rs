@@ -3,9 +3,9 @@ mod remote;
 mod utils;
 
 fn main() {
-    let args: Vec<_> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
 
-    if args.len() != 3 {
+    if args.len() < 3 {
         return help();
     }
 
@@ -20,6 +20,7 @@ fn main() {
         "dev" => local::server::handle(path),
         // Remote
         "deploy" => remote::deploy::handle(path),
+        "cdn" => remote::cdn::handle(path, args),
         // Utils
         "init" => utils::init::handle(path),
         "build" => utils::build::handle(path),
@@ -35,10 +36,9 @@ fn help() {
         r#"moix OPTION PATH
 
 Options:
-  init  - Create a directory with basic files.
-  build - Generates a compressed file of dist/index.html
-  dev   - Start a web server with port 8080.
-"#
+  init   - Create a directory with basic files.
+  build  - Generates a compressed file of dist/index.html
+  dev    - Start a web server with port 8080."#
     );
 }
 
