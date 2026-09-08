@@ -2,7 +2,7 @@ use base64::Engine;
 use std::path::PathBuf;
 
 pub fn handle(mut path: PathBuf) {
-    println!("moix b64 {}", path.display());
+    println!("moix b64 {}\n", path.display());
 
     if let Some(contents) = from_path(&path) {
         path.add_extension("txt");

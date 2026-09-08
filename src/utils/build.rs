@@ -1,7 +1,7 @@
 use std::{fs, io::Write, path::PathBuf};
 
 pub fn handle(path: PathBuf) {
-    println!("moix build {}", path.display());
+    println!("moix build {}\n", path.display());
 
     // CSS
     let mut head: Vec<u8> = "<style>".into();
@@ -9,11 +9,15 @@ pub fn handle(path: PathBuf) {
     head.extend(b"</style>\n");
 
     // favicon.png
-    if path.join("dist/favicon.png").exists() {
+    let path_favicon = path.join("dist/favicon.png");
+
+    println!("{}", path_favicon.display());
+
+    if path_favicon.exists() {
         let mut favicon: Vec<u8> =
             r#"<link rel="icon" type="image/png" href="data:image/png;base64,"#.into();
 
-        if let Some(b64_str) = crate::utils::b64::from_path(&path.join("dist/favicon.png")) {
+        if let Some(b64_str) = crate::utils::b64::from_path(&path_favicon) {
             favicon.extend(b64_str.as_bytes());
         }
 
@@ -29,7 +33,11 @@ pub fn handle(path: PathBuf) {
     body.extend(b"</script>\n");
 
     // Icons
-    body.extend(fs::read(path.join("dist/icons.svg")).unwrap_or_default());
+    let path_icons = path.join("dist/icons.svg");
+
+    println!("{}", path_icons.display());
+
+    body.extend(fs::read(path_icons).unwrap_or_default());
 
     // Templates
     body.extend(read_dir_ext(path.join("templates"), "html"));
@@ -37,7 +45,11 @@ pub fn handle(path: PathBuf) {
     body.extend(b"\n</body>");
 
     // Replace
-    let contents = fs::read(path.join("dist/index.html")).unwrap_or_default();
+    let path_index = path.join("dist/index.html");
+
+    println!("{}", path_index.display());
+
+    let contents = fs::read(path_index).unwrap_or_default();
     let contents = replace(&contents, b"</head>", &head);
     let contents = replace(&contents, b"</body>", &body);
 
@@ -50,7 +62,11 @@ pub fn handle(path: PathBuf) {
     let _ = writer.write_all(minify.get_html());
 
     // index.bin
-    fs::write(path.join("index.bin"), writer.into_inner()).unwrap();
+    let path_bin = path.join("index.bin");
+
+    println!("\n{}", path_bin.display());
+
+    fs::write(path_bin, writer.into_inner()).unwrap();
 }
 
 fn replace(base: &[u8], pattern: &[u8], content: &[u8]) -> Vec<u8> {
@@ -78,6 +94,8 @@ fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
+
+        println!("{}", path.display());
 
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {
             let bytes = fs::read(path).expect(&path.to_string_lossy());

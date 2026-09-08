@@ -1,9 +1,9 @@
 pub fn handle(path: std::path::PathBuf) {
-    println!("moix deploy {}", path.display());
+    let (url, token) = super::get_env_deploy(&path);
+
+    println!("moix deploy {}\n", path.display());
 
     let index_bytes = std::fs::read(path.join("index.bin")).expect("index.bin error");
-
-    let (url, token) = super::get_env_deploy(&path);
 
     let response = minreq::put(format!("{url}/app/deploy/index"))
         .with_header("Authorization", &format!("Bearer {token}"))
@@ -17,6 +17,6 @@ pub fn handle(path: std::path::PathBuf) {
         println!("Deployed!");
     } else {
         let text = response.as_str().expect("response body error");
-        println!("remote error: {text}");
+        eprintln!("remote error: {text}");
     }
 }

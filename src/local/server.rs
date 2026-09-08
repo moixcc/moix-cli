@@ -2,20 +2,25 @@ use std::fs;
 use tiny_http::{Header, Method, Response};
 
 pub fn handle(path: std::path::PathBuf) {
-    println!("moix dev {}\nhttp://localhost:8080", path.display());
-
     // Config
+    let config = crate::utils::Config::new(&path);
+
+    println!("moix dev {}\n  >> http://localhost:8080\n", path.display());
+
     let server = tiny_http::Server::http("0.0.0.0:8080").unwrap();
     let index_path = path.join("index.bin");
-    let config = crate::utils::Config::new(&path);
 
     // Requests
     for request in server.incoming_requests() {
         let bytes: Vec<u8>;
         let content_type: String;
         let mut content_encoding: &str = "";
+        let method = request.method();
+        let uri = request.url();
 
-        match (request.method(), request.url()) {
+        println!("{} {}", method.as_str(), uri);
+
+        match (method, uri) {
             // No favicon.ico
             (Method::Get, "/favicon.ico") => {
                 let _ = request.respond(Response::empty(404));

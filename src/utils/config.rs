@@ -7,18 +7,24 @@ pub struct Config {
 
 impl Config {
     pub fn new(path: &PathBuf) -> Self {
-        let config_str = std::fs::read_to_string(path.join("config.toml")).unwrap_or_default();
+        let path_config = path.join("config.toml");
+
+        println!("Load {}", path_config.display());
+
+        let config_str = std::fs::read_to_string(&path_config).unwrap_or_default();
 
         toml::from_str::<Config>(&config_str).unwrap_or_default()
     }
 
     pub fn get_mimetype(&self, path: &PathBuf) -> String {
+        let default = String::from("text/plain");
+
         if let Some(ext) = path.extension() {
-            if let Some(mimetype) = self.mimetype.get(ext.to_str().unwrap_or_default()) {
+            if let Some(mimetype) = self.mimetype.get(ext.to_str().unwrap_or(&default)) {
                 return mimetype.to_owned();
             };
         }
 
-        String::new()
+        default
     }
 }
