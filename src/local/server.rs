@@ -25,12 +25,12 @@ pub fn handle(path: std::path::PathBuf) {
             (m, u) if m == &Method::Get && u.starts_with("/cdn/") => {
                 let path_cdn = path.join(u.trim_start_matches('/'));
 
-                bytes = fs::read(&path_cdn).expect("cdn error");
+                bytes = fs::read(&path_cdn).unwrap_or_default();
                 content_type = config.get_mimetype(&path_cdn);
             }
             // All Request GET => index.bin
             (Method::Get, _) => {
-                bytes = fs::read(&index_path).expect("index.bin error");
+                bytes = fs::read(&index_path).unwrap_or_default();
                 content_type = "text/html; charset=UTF-8".into();
                 content_encoding = "br";
             }
