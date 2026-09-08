@@ -4,11 +4,10 @@ use tiny_http::{Header, Method, Response};
 pub fn handle(path: std::path::PathBuf) {
     // Config
     let config = crate::utils::Config::new(&path);
-
-    println!("moix dev {}\n  >> http://localhost:8080\n", path.display());
-
     let server = tiny_http::Server::http("0.0.0.0:8080").unwrap();
     let index_path = path.join("index.bin");
+
+    println!("moix dev {}\n  >> http://localhost:8080\n", path.display());
 
     // Requests
     for request in server.incoming_requests() {

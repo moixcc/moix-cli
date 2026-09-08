@@ -1,12 +1,8 @@
 pub fn handle(path: std::path::PathBuf, args: Vec<String>) {
     let (url, token) = super::get_env_deploy(&path);
-
     let uri = args.get(3).expect("uri error");
-
     let config = crate::utils::Config::new(&path);
-
     let path_file = path.join("cdn").join(uri);
-
     let mimetype = config.get_mimetype(&path_file);
 
     println!(
@@ -17,7 +13,6 @@ pub fn handle(path: std::path::PathBuf, args: Vec<String>) {
     );
 
     let file_bytes = std::fs::read(path_file).expect("file error");
-
     let response = minreq::put(format!("{url}/cdn/{uri}"))
         .with_header("Authorization", &format!("Bearer {token}"))
         .with_header("Content-Type", mimetype)

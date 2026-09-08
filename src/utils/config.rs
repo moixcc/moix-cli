@@ -8,10 +8,9 @@ pub struct Config {
 impl Config {
     pub fn new(path: &PathBuf) -> Self {
         let path_config = path.join("config.toml");
+        let config_str = std::fs::read_to_string(&path_config).unwrap_or_default();
 
         println!("Load {}", path_config.display());
-
-        let config_str = std::fs::read_to_string(&path_config).unwrap_or_default();
 
         toml::from_str::<Config>(&config_str).unwrap_or_default()
     }
