@@ -25,7 +25,7 @@ jobs:
 
       - name: Application
         run: cp target/release/moix ./moix-linux
-      
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
