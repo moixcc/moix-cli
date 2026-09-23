@@ -28,6 +28,8 @@ brotli = "9.0"
 dotenvy = "0.15"
 html-minifier = "5.0"
 minreq = { version = "3.0", features = ["https-native-tls"] }
+rhai = "1.26"
+rusqlite = { version = "0.40", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 tiny_http = "0.12"
 toml = "1.1"

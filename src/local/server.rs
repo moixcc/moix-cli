@@ -32,6 +32,12 @@ pub fn handle(path: std::path::PathBuf) {
                 bytes = fs::read(&path_cdn).unwrap_or_default();
                 content_type = config.get_mimetype(&path_cdn);
             }
+            // API
+            (_, u) if u.starts_with("/api/") => {
+                let _ = super::api::handle();
+                let _ = request.respond(Response::empty(400));
+                continue;
+            }
             // All Request GET => index.bin
             (Method::Get, _) => {
                 bytes = fs::read(&index_path).unwrap_or_default();
