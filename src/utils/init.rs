@@ -1,16 +1,11 @@
 use std::fs;
 
-pub fn handle(path: std::path::PathBuf) {
-    println!("moix init {}\n", path.display());
-
-    let _ = fs::create_dir_all(&path);
+pub fn handle(path: std::path::PathBuf) -> anyhow::Result<()> {
+    fs::create_dir_all(&path)?;
 
     for dir_name in ["api", "data", "templates", "dist/css", "dist/js"] {
         let path_dir = path.join(dir_name);
-
-        println!("{}", path_dir.display());
-
-        let _ = fs::create_dir_all(path_dir);
+        fs::create_dir_all(path_dir)?;
     }
 
     for file_name in [
@@ -23,12 +18,12 @@ pub fn handle(path: std::path::PathBuf) {
     ] {
         let path_file = path.join(file_name);
 
-        println!("{}", path_file.display());
-
         if !path_file.exists() {
-            let _ = fs::write(path_file, get_content(file_name));
+            fs::write(path_file, get_content(file_name))?;
         }
     }
+
+    Ok(())
 }
 
 fn get_content(file_name: &str) -> &'static str {

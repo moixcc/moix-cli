@@ -10,8 +10,6 @@ impl Config {
         let path_config = path.join("config.toml");
         let config_str = std::fs::read_to_string(&path_config).unwrap_or_default();
 
-        println!("Load {}", path_config.display());
-
         toml::from_str::<Config>(&config_str).unwrap_or_default()
     }
 

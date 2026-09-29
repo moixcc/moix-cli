@@ -3,12 +3,10 @@ pub mod deploy;
 use std::env;
 
 pub fn get_env_deploy(path: &std::path::PathBuf) -> (String, String) {
-    dotenvy::from_path(&path.join(".env")).expect(".env error");
+    let _ = dotenvy::from_path(&path.join(".env"));
 
-    let url = env::var("DEPLOY_URL").expect("deploy_url error");
-    let token = env::var("DEPLOY_TOKEN").expect("deploy_token error");
-
-    println!("Load VARS");
+    let url = env::var("DEPLOY_URL").unwrap_or("http://localhost:8080".into());
+    let token = env::var("DEPLOY_TOKEN").unwrap_or_default();
 
     (url, token)
 }

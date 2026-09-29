@@ -2,14 +2,32 @@
 all:
     just --list
 
-init:
-    cargo run --release -- init ./test
+run: format
+    cargo run
 
-dev:
-    cargo run --release -- dev ./test
+moix OPTION PATH: format
+    cargo run -- {{ OPTION }} {{ PATH }}
+
+format:
+    cargo fmt
+
+install: format
+    cargo install --path .
+
+init:
+    @just moix init ./test
 
 build:
-    cargo run --release -- build ./test
+    @just moix build ./test
 
-install:
-    cargon install --path .
+dev:
+    @just moix dev ./test
+
+deploy:
+    @just moix deploy ./test
+
+cdn:
+    cargo run -- cdn ./test data.json
+
+b64:
+    @just moix b64 ./test/cdn/data.json

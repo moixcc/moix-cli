@@ -1,8 +1,6 @@
 use std::{fs, io::Write, path::PathBuf};
 
-pub fn handle(path: PathBuf) {
-    println!("moix build {}\n", path.display());
-
+pub fn handle(path: PathBuf) -> anyhow::Result<()> {
     // CSS
     let mut head: Vec<u8> = "<style>".into();
     head.extend(read_dir_ext(path.join("dist/css"), "css"));
@@ -10,8 +8,6 @@ pub fn handle(path: PathBuf) {
 
     // favicon.png
     let path_favicon = path.join("dist/favicon.png");
-
-    println!("{}", path_favicon.display());
 
     if path_favicon.exists() {
         let mut favicon: Vec<u8> =
@@ -35,8 +31,6 @@ pub fn handle(path: PathBuf) {
     // Icons
     let path_icons = path.join("dist/icons.svg");
 
-    println!("{}", path_icons.display());
-
     body.extend(fs::read(path_icons).unwrap_or_default());
 
     // Templates
@@ -47,26 +41,24 @@ pub fn handle(path: PathBuf) {
     // Replace
     let path_index = path.join("dist/index.html");
 
-    println!("{}", path_index.display());
-
     let contents = fs::read(path_index).unwrap_or_default();
     let contents = replace(&contents, b"</head>", &head);
     let contents = replace(&contents, b"</body>", &body);
 
     // Minify
     let mut minify = html_minifier::HTMLMinifier::new();
-    let _ = minify.digest(&contents);
+    minify.digest(&contents)?;
 
     // Compress
     let mut writer = brotli::CompressorWriter::new(Vec::new(), 0, 11, 24);
-    let _ = writer.write_all(minify.get_html());
+    writer.write_all(minify.get_html())?;
 
     // index.bin
     let path_bin = path.join("index.bin");
 
-    println!("\n{}", path_bin.display());
+    fs::write(&path_bin, writer.into_inner())?;
 
-    fs::write(path_bin, writer.into_inner()).unwrap();
+    Ok(())
 }
 
 fn replace(base: &[u8], pattern: &[u8], content: &[u8]) -> Vec<u8> {
@@ -95,10 +87,8 @@ fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
     {
         let path = entry.path();
 
-        println!("{}", path.display());
-
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {
-            let bytes = fs::read(path).expect(&path.to_string_lossy());
+            let bytes = fs::read(path).unwrap_or_default();
             contents.extend(bytes);
         }
     }
