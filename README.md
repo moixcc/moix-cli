@@ -1,6 +1,6 @@
 # Moix Client
 
-Create a compressed (`brotli`) version of index.html with svg, javascript, css and embedded templates.
+Create a compressed (`Brotli`) version of index.html with SVG, JavaScript, CSS and Templates.
 
 ```bash
 # moix OPTION PATH
@@ -12,20 +12,22 @@ moix dev ./test
 
 ## Installation
 
-### Production
+### Pacha: Production version
 
 ```bash
 cargo install moix-cli
 ```
 
-### Testing
+### Killa: Testing version
 
 ```bash
 cargo install --git https://github.com/moixcc/moix-cli
 ```
 
-### Development
+### Inti: Development version
 
 ```bash
 cargo install --git https://github.com/moixcc/moix-cli --branch dev
 ```
+
+> Its use in production is not recommended.

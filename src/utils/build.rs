@@ -1,19 +1,19 @@
 use std::{fs, io::Write, path::PathBuf};
 
-pub fn handle(path: PathBuf) {
-    println!("moix build {}", path.display());
-
+pub fn handle(path: PathBuf) -> anyhow::Result<()> {
     // CSS
     let mut head: Vec<u8> = "<style>".into();
     head.extend(read_dir_ext(path.join("dist/css"), "css"));
     head.extend(b"</style>\n");
 
     // favicon.png
-    if path.join("dist/favicon.png").exists() {
+    let path_favicon = path.join("dist/favicon.png");
+
+    if path_favicon.exists() {
         let mut favicon: Vec<u8> =
             r#"<link rel="icon" type="image/png" href="data:image/png;base64,"#.into();
 
-        if let Some(b64_str) = crate::utils::b64::from_path(&path.join("dist/favicon.png")) {
+        if let Some(b64_str) = crate::utils::b64::from_path(&path_favicon) {
             favicon.extend(b64_str.as_bytes());
         }
 
@@ -29,7 +29,9 @@ pub fn handle(path: PathBuf) {
     body.extend(b"</script>\n");
 
     // Icons
-    body.extend(fs::read(path.join("dist/icons.svg")).unwrap_or_default());
+    let path_icons = path.join("dist/icons.svg");
+
+    body.extend(fs::read(path_icons).unwrap_or_default());
 
     // Templates
     body.extend(read_dir_ext(path.join("templates"), "html"));
@@ -37,20 +39,26 @@ pub fn handle(path: PathBuf) {
     body.extend(b"\n</body>");
 
     // Replace
-    let contents = fs::read(path.join("dist/index.html")).unwrap_or_default();
+    let path_index = path.join("dist/index.html");
+
+    let contents = fs::read(path_index).unwrap_or_default();
     let contents = replace(&contents, b"</head>", &head);
     let contents = replace(&contents, b"</body>", &body);
 
     // Minify
     let mut minify = html_minifier::HTMLMinifier::new();
-    let _ = minify.digest(&contents);
+    minify.digest(&contents)?;
 
     // Compress
     let mut writer = brotli::CompressorWriter::new(Vec::new(), 0, 11, 24);
-    let _ = writer.write_all(minify.get_html());
+    writer.write_all(minify.get_html())?;
 
     // index.bin
-    fs::write(path.join("index.bin"), writer.into_inner()).unwrap();
+    let path_bin = path.join("index.bin");
+
+    fs::write(&path_bin, writer.into_inner())?;
+
+    Ok(())
 }
 
 fn replace(base: &[u8], pattern: &[u8], content: &[u8]) -> Vec<u8> {
@@ -80,7 +88,7 @@ fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
         let path = entry.path();
 
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {
-            let bytes = fs::read(path).expect(&path.to_string_lossy());
+            let bytes = fs::read(path).unwrap_or_default();
             contents.extend(bytes);
         }
     }
