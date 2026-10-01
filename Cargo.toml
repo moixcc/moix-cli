@@ -1,6 +1,6 @@
 [package]
 name = "moix-cli"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
 authors = ["Moix Dev <dev@moix.cc>"]
 description = "Create a compressed (Brotli) version of index.html with SVG, JavaScript, CSS and Templates."
@@ -29,8 +29,7 @@ brotli = "9.0"
 dotenvy = "0.15"
 html-minifier = "5.0"
 minreq = { version = "3.0", features = ["https-native-tls"] }
-# rhai = { version = "1.26", features = [] }
-# rusqlite = { version = "0.40", features = ["bundled"] }
+rhai = "1.26"
 serde = { version = "1.0", features = ["derive"] }
 tiny_http = "0.12"
 toml = "1.1"

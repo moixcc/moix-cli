@@ -39,7 +39,12 @@ pub fn handle(path: std::path::PathBuf) -> anyhow::Result<(), anyhow::Error> {
             }
             // API
             (_, u) if u.starts_with("/api/") => {
-                request.respond(Response::empty(400))?;
+                let file = path.join(u.strip_prefix('/').unwrap_or(u));
+                if file.exists() {
+                    let _ = crate::api::handle(request, file);
+                } else {
+                    request.respond(Response::empty(400))?;
+                }
                 continue;
             }
             // DB
