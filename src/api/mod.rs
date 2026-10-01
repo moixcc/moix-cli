@@ -7,10 +7,11 @@ use response::Response;
 use rhai::{AST, Engine, EvalAltResult, Scope};
 
 pub fn handle(
-    client: tiny_http::Request,
+    mut client: tiny_http::Request,
     path: std::path::PathBuf,
 ) -> anyhow::Result<(), Box<EvalAltResult>> {
     let mut engine = Engine::new();
+
     engine.build_type::<Response>();
     engine.build_type::<Request>();
     engine.build_type::<Context>();
@@ -21,8 +22,16 @@ pub fn handle(
 
     let ast: AST = engine.compile_file_with_scope(&mut scope, path)?;
 
+    let mut body = vec![];
+    let mut buffer = [0u8; 1024];
+
+    match client.as_reader().read(&mut buffer) {
+        Ok(bytes_size) => body = buffer[..bytes_size].to_vec(),
+        _ => (),
+    };
+
     let method = client.method().to_string().to_lowercase();
-    let request = Request::new(method.clone());
+    let request = Request::new(method.clone(), body);
     let context = Context::new();
 
     let target_fn = format!("on_{}", method);
