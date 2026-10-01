@@ -41,7 +41,9 @@ pub fn handle(path: std::path::PathBuf) -> anyhow::Result<(), anyhow::Error> {
             (_, u) if u.starts_with("/api/") => {
                 let file = path.join(u.strip_prefix('/').unwrap_or(u));
                 if file.exists() {
-                    let _ = crate::api::handle(request, file);
+                    if let Err(e) = crate::api::handle(request, file.clone()) {
+                        println!("{} | {:?}", file.display(), e);
+                    }
                 } else {
                     request.respond(Response::empty(400))?;
                 }

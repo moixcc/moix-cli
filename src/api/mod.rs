@@ -21,12 +21,28 @@ pub fn handle(
 
     let ast: AST = engine.compile_file_with_scope(&mut scope, path)?;
 
-    let request = Request::new();
+    let method = client.method().to_string().to_lowercase();
+    let request = Request::new(method.clone());
     let context = Context::new();
 
-    let result: Response = engine.call_fn(&mut scope, &ast, "on", (request, context))?;
+    let target_fn = format!("on_{}", method);
+    let result: Result<Response, Box<EvalAltResult>> = engine
+        .call_fn(
+            &mut scope,
+            &ast,
+            &target_fn,
+            (request.clone(), context.clone()),
+        )
+        .or_else(|err| {
+            if let EvalAltResult::ErrorFunctionNotFound(fn_name, _) = err.as_ref() {
+                if fn_name.starts_with(&target_fn) {
+                    return engine.call_fn(&mut scope, &ast, "on", (request, context));
+                }
+            }
+            Err(err)
+        });
 
-    client.respond(result.response()).unwrap();
+    client.respond(result?.response()).unwrap();
 
     Ok(())
 }
