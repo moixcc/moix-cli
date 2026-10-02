@@ -1,1 +1,11 @@
-body{text-align:center;}
+body {
+    font-size: 24pt;
+}
+
+form {
+    margin-block: 1em;
+}
+
+form * {
+    font-size: inherit;
+}

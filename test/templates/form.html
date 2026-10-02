@@ -1,0 +1,40 @@
+<template id="form">
+    <a href="/">Back</a>
+
+    <form method="GET" action="/api/form">
+        <fieldset>
+            <legend>GET | E-Mail</legend>
+            <input type="email" name="email" value="dev@moix.cc" />
+            <button>Submit</button>
+        </fieldset>
+    </form>
+
+    <form
+        onsubmit="
+            fetch('/api/form', {
+                method: 'POST',
+                body: new FormData(this),
+            });
+            return false;
+        "
+    >
+        <fieldset>
+            <legend>POST | JavaScript</legend>
+            <select name="nature">
+                <option value="-1">-1 Debit</option>
+                <option value="-0">-0 Nobit</option>
+                <option value="+0">+0 Nobit</option>
+                <option value="+1">+1 Credit</option>
+            </select>
+            <button>Submit</button>
+        </fieldset>
+    </form>
+
+    <form method="PUT" action="/api/form">
+        <fieldset>
+            <legend>PUT | File</legend>
+            <input type="file" name="file" />
+            <button>Submit</button>
+        </fieldset>
+    </form>
+</template>

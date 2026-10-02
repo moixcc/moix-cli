@@ -15,7 +15,11 @@ pub fn handle(path: std::path::PathBuf) -> anyhow::Result<(), anyhow::Error> {
         let content_type: String;
         let mut content_encoding: &str = "";
         let method = request.method();
-        let uri = request.url();
+        let url = request.url();
+        let (uri, _query) = match url.split_once('?') {
+            Some((p, q)) => (p, Some(q)),
+            None => (url, None),
+        };
 
         println!("{method} {uri}");
 
@@ -39,7 +43,9 @@ pub fn handle(path: std::path::PathBuf) -> anyhow::Result<(), anyhow::Error> {
             }
             // API
             (_, u) if u.starts_with("/api/") => {
-                let file = path.join(u.strip_prefix('/').unwrap_or(u));
+                let file = path
+                    .join(u.strip_prefix('/').unwrap_or(u))
+                    .with_extension("rhai");
                 if file.exists() {
                     if let Err(e) = crate::api::handle(request, file.clone()) {
                         println!("{} | {:?}", file.display(), e);
