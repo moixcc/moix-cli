@@ -3,7 +3,10 @@ mod local;
 mod remote;
 mod utils;
 
-fn main() -> anyhow::Result<()> {
+use anyhow::Result;
+use std::path::PathBuf;
+
+fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() < 3 {
@@ -15,7 +18,7 @@ fn main() -> anyhow::Result<()> {
         _ => return help(),
     };
     let path = match args.get(2) {
-        Some(p) => std::path::PathBuf::from(p),
+        Some(p) => PathBuf::from(p),
         _ => return help(),
     };
 
@@ -25,6 +28,7 @@ fn main() -> anyhow::Result<()> {
         // Remote
         "deploy" => remote::deploy::handle(path),
         "cdn" => remote::cdn::handle(path, args),
+        "api" => remote::api::handle(path, args),
         // Utils
         "init" => utils::init::handle(path),
         "build" => utils::build::handle(path),
@@ -33,7 +37,7 @@ fn main() -> anyhow::Result<()> {
     };
 }
 
-fn help() -> anyhow::Result<()> {
+fn help() -> Result<()> {
     println!(
         r#"moix OPTION PATH
 

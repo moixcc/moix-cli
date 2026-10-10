@@ -7,6 +7,12 @@ impl Context {
     pub fn new() -> Self {
         Self {}
     }
+
+    fn hasher(&self) {}
+
+    fn fetch(&self) {}
+
+    fn kipu(&self) {}
 }
 
 impl CustomType for Context {

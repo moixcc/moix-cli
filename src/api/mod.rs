@@ -1,15 +1,20 @@
 mod context;
+mod fetch;
+mod form;
+mod hasher;
+mod kipu;
 mod request;
 mod response;
+
+use anyhow::Result;
 use context::Context;
 use request::Request;
 use response::Response;
 use rhai::{AST, Engine, EvalAltResult, Scope};
+use std::path::PathBuf;
+use tiny_http::Request as ClientRequest;
 
-pub fn handle(
-    mut client: tiny_http::Request,
-    path: std::path::PathBuf,
-) -> anyhow::Result<(), Box<EvalAltResult>> {
+pub fn handle(mut client: ClientRequest, path: PathBuf) -> Result<(), Box<EvalAltResult>> {
     let mut engine = Engine::new();
 
     engine.build_type::<Response>();

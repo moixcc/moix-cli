@@ -1,7 +1,9 @@
+use anyhow::Result;
 use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 use std::path::PathBuf;
 
-pub fn handle(mut path: PathBuf) -> anyhow::Result<()> {
+pub fn handle(mut path: PathBuf) -> Result<()> {
     if let Some(contents) = from_path(&path) {
         path.add_extension("txt");
 
@@ -15,7 +17,7 @@ pub fn handle(mut path: PathBuf) -> anyhow::Result<()> {
 
 pub fn from_path(path: &PathBuf) -> Option<String> {
     if let Ok(bytes) = std::fs::read(&path) {
-        return Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
+        return Some(STANDARD.encode(&bytes));
     }
 
     None

@@ -1,6 +1,12 @@
-use std::{fs, io::Write, path::PathBuf};
+use anyhow::Result;
+use brotli::CompressorWriter;
+use html_minifier::HTMLMinifier;
+use std::fs;
+use std::io::Write;
+use std::path::PathBuf;
+use walkdir::WalkDir;
 
-pub fn handle(path: PathBuf) -> anyhow::Result<()> {
+pub fn handle(path: PathBuf) -> Result<()> {
     // CSS
     let mut head: Vec<u8> = "<style>".into();
     head.extend(read_dir_ext(path.join("dist/css"), "css"));
@@ -46,11 +52,11 @@ pub fn handle(path: PathBuf) -> anyhow::Result<()> {
     let contents = replace(&contents, b"</body>", &body);
 
     // Minify
-    let mut minify = html_minifier::HTMLMinifier::new();
+    let mut minify = HTMLMinifier::new();
     minify.digest(&contents)?;
 
     // Compress
-    let mut writer = brotli::CompressorWriter::new(Vec::new(), 0, 11, 24);
+    let mut writer = CompressorWriter::new(Vec::new(), 0, 11, 24);
     writer.write_all(minify.get_html())?;
 
     // index.bin
@@ -81,10 +87,7 @@ fn replace(base: &[u8], pattern: &[u8], content: &[u8]) -> Vec<u8> {
 fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
     let mut contents = Vec::new();
 
-    for entry in walkdir::WalkDir::new(path_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-    {
+    for entry in WalkDir::new(path_dir).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
 
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {

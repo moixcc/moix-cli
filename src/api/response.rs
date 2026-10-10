@@ -1,7 +1,9 @@
 use rhai::{CustomType, Dynamic, TypeBuilder};
 use serde_json::Value;
 use std::collections::BTreeMap;
+use std::io::Cursor;
 use tiny_http::Header;
+use tiny_http::Response as ClientResponse;
 
 #[derive(Debug, Clone)]
 pub struct Response {
@@ -19,9 +21,9 @@ impl Response {
         }
     }
 
-    pub fn response(&self) -> tiny_http::Response<std::io::Cursor<Vec<u8>>> {
+    pub fn response(&self) -> ClientResponse<Cursor<Vec<u8>>> {
         let mut response =
-            tiny_http::Response::from_data(self.body.clone()).with_status_code(self.status);
+            ClientResponse::from_data(self.body.clone()).with_status_code(self.status);
 
         for (key, val) in self.headers.iter() {
             response.add_header(Header::from_bytes(key.as_bytes(), val.as_bytes()).unwrap());
@@ -54,6 +56,8 @@ impl Response {
 
         self.clone()
     }
+
+    fn header(&self, name: &str) {}
 }
 
 impl CustomType for Response {

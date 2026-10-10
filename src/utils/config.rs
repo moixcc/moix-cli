@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Default, serde::Deserialize)]
 pub struct Config {
-    mimetype: std::collections::HashMap<String, String>,
+    mimetype: HashMap<String, String>,
 }
 
 impl Config {

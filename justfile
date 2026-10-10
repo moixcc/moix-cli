@@ -26,8 +26,11 @@ dev:
 deploy:
     @just moix deploy ./test
 
-cdn:
-    cargo run -- cdn ./test data.json
+cdn OPTION:
+    cargo run -- cdn ./test data.json {{ OPTION }}
+
+api OPTION:
+    cargo run -- api ./test hello.rhai {{ OPTION }}
 
 b64:
     @just moix b64 ./test/cdn/data.json

@@ -1,12 +1,16 @@
+use crate::utils::Config;
+use anyhow::{Error, Result};
 use std::fs;
+use std::path::PathBuf;
+use tiny_http::Server;
 use tiny_http::{Header, Method, Response};
 
-pub fn handle(path: std::path::PathBuf) -> anyhow::Result<(), anyhow::Error> {
+pub fn handle(path: PathBuf) -> Result<(), Error> {
     println!("http://localhost:8080");
 
     // Config
-    let config = crate::utils::Config::new(&path);
-    let server = tiny_http::Server::http("0.0.0.0:8080").unwrap();
+    let config = Config::new(&path);
+    let server = Server::http("0.0.0.0:8080").unwrap();
     let index_path = path.join("index.bin");
 
     // Requests

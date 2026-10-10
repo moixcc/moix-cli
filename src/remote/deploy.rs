@@ -1,4 +1,7 @@
-pub fn handle(path: std::path::PathBuf) -> anyhow::Result<()> {
+use anyhow::Result;
+use std::path::PathBuf;
+
+pub fn handle(path: PathBuf) -> Result<()> {
     let (url, token) = super::get_env_deploy(&path);
     let index_bytes = std::fs::read(path.join("index.bin"))?;
 

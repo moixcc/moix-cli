@@ -1,4 +1,7 @@
-pub fn handle(path: std::path::PathBuf, args: Vec<String>) -> anyhow::Result<()> {
+use anyhow::Result;
+use std::path::PathBuf;
+
+pub fn handle(path: PathBuf, args: Vec<String>) -> Result<()> {
     let (url, token) = super::get_env_deploy(&path);
     let uri = match args.get(3) {
         Some(u) => u,
@@ -7,6 +10,7 @@ pub fn handle(path: std::path::PathBuf, args: Vec<String>) -> anyhow::Result<()>
             return Ok(());
         }
     };
+    let is_removed = args.get(4).map(String::as_str) == Some("--rm");
     let config = crate::utils::Config::new(&path);
     let path_file = path.join("cdn").join(uri);
     let mimetype = config.get_mimetype(&path_file);

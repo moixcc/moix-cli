@@ -1,15 +1,23 @@
 use rhai::{CustomType, Dynamic, ImmutableString, TypeBuilder};
 use serde_json::Value;
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone)]
 pub struct Request {
     method: String,
+    headers: BTreeMap<String, String>,
     body: Vec<u8>,
 }
 
 impl Request {
     pub fn new(method: String, body: Vec<u8>) -> Self {
-        Self { method, body }
+        let headers = BTreeMap::new();
+
+        Self {
+            method,
+            headers,
+            body,
+        }
     }
 
     fn method(&mut self) -> String {
@@ -27,6 +35,8 @@ impl Request {
             Dynamic::UNIT
         }
     }
+
+    fn header(&self, name: &str) {}
 }
 
 impl CustomType for Request {

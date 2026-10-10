@@ -1,6 +1,8 @@
+use anyhow::Result;
 use std::fs;
+use std::path::PathBuf;
 
-pub fn handle(path: std::path::PathBuf) -> anyhow::Result<()> {
+pub fn handle(path: PathBuf) -> Result<()> {
     fs::create_dir_all(&path)?;
 
     for dir_name in ["api", "data", "templates", "dist/css", "dist/js"] {
