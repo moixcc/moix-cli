@@ -40,16 +40,22 @@ pub fn handle(path: PathBuf) -> Result<(), Error> {
             }
             // CDN
             (m, u) if m == &Method::Get && u.starts_with("/cdn/") => {
-                let path_cdn = path.join(u.trim_start_matches('/'));
+                let file = path.join(u.trim_start_matches('/'));
 
-                content_type = config.get_mimetype(&path_cdn);
-                bytes = fs::read(&path_cdn)?;
+                if file.exists() {
+                    content_type = config.get_mimetype(&file);
+                    bytes = fs::read(&file)?;
+                } else {
+                    request.respond(Response::empty(400))?;
+                    continue;
+                }
             }
             // API
             (_, u) if u.starts_with("/api/") => {
                 let file = path
                     .join(u.strip_prefix('/').unwrap_or(u))
                     .with_extension("rhai");
+
                 if file.exists() {
                     if let Err(e) = crate::api::handle(request, file.clone()) {
                         println!("{} | {:?}", file.display(), e);
