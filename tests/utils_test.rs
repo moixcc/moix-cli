@@ -1,4 +1,4 @@
-use moix_cli::utils::b64;
+use moix_cli::utils::{b64, init};
 use std::{fs, path::PathBuf};
 
 #[test]
@@ -27,4 +27,19 @@ fn b64_encode_path_str() {
     let content_txt = fs::read_to_string(path.clone()).unwrap();
 
     assert_eq!(content_b64, content_txt);
+}
+
+#[test]
+fn init_exists_files() {
+    let path_str = "./example";
+
+    init::handle(path_str);
+
+    let path = PathBuf::from(path_str);
+
+    for file_name in init::FILES {
+        let file = path.join(file_name);
+
+        assert!(file.exists())
+    }
 }
