@@ -7,7 +7,6 @@ Create a compressed (`Brotli`) version of index.html with SVG, JavaScript, CSS a
 moix init ./test
 moix build ./test
 moix dev ./test
-# http://localhost:8080
 ```
 
 ## Installation

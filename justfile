@@ -1,36 +1,18 @@
-# cargo install justfile
+# cargo install just
 all:
     just --list
 
-run: format
-    cargo run
+tools:
+    cargo install just cargo-bloat
 
-moix OPTION PATH: format
-    cargo run -- {{ OPTION }} {{ PATH }}
+bloat:
+    cargo bloat --release
+
+install: test
+    cargo install --path .
+
+test: format
+    cargo test --release
 
 format:
     cargo fmt
-
-install: format
-    cargo install --path .
-
-init:
-    @just moix init ./test
-
-build:
-    @just moix build ./test
-
-dev:
-    @just moix dev ./test
-
-deploy:
-    @just moix deploy ./test
-
-cdn OPTION:
-    cargo run -- cdn ./test data.json {{ OPTION }}
-
-api OPTION:
-    cargo run -- api ./test hello.rhai {{ OPTION }}
-
-b64:
-    @just moix b64 ./test/cdn/data.json

@@ -1,55 +1,25 @@
-mod api;
-mod local;
-mod remote;
-mod utils;
+use embassy_executor::Spawner;
+use moix_cli::*;
 
-use anyhow::Result;
-use std::path::PathBuf;
+#[embassy_executor::main]
+async fn main(_spawn: Spawner) {
+    let arguments: Vec<String> = std::env::args().collect();
+    let option = arguments.get(1).map(|arg| arg.as_str());
+    let path = arguments.get(2).map(|arg| arg.as_str());
 
-fn main() -> Result<()> {
-    let args: Vec<String> = std::env::args().collect();
-
-    if args.len() < 3 {
-        return help();
+    match (option, path) {
+        // Local
+        // "dev" => local::server::handle(path),
+        // Remote
+        // "deploy" => remote::deploy::handle(path),
+        // "cdn" => remote::cdn::handle(path, args),
+        // "api" => remote::api::handle(path, args),
+        // Utils
+        // "init" => utils::init::handle(path),
+        // "build" => utils::build::handle(path),
+        (Some("b64"), Some(path_str)) => utils::b64::encode_path(path_str),
+        _ => help(),
     }
 
-    let option = match args.get(1) {
-        Some(o) => o,
-        _ => return help(),
-    };
-    let path = match args.get(2) {
-        Some(p) => PathBuf::from(p),
-        _ => return help(),
-    };
-
-    return match option.as_str() {
-        // Local
-        "dev" => local::server::handle(path),
-        // Remote
-        "deploy" => remote::deploy::handle(path),
-        "cdn" => remote::cdn::handle(path, args),
-        "api" => remote::api::handle(path, args),
-        // Utils
-        "init" => utils::init::handle(path),
-        "build" => utils::build::handle(path),
-        "b64" => utils::b64::handle(path),
-        _ => help(),
-    };
-}
-
-fn help() -> Result<()> {
-    println!(
-        r#"moix OPTION PATH
-
-Options:
-  init   - Create a directory with basic files
-  build  - Generates a compressed file of dist/index.html
-  dev    - Start a web server with port http://localhost:8080"#
-    );
-
-    Ok(())
-}
-
-pub fn exit() {
-    std::process::exit(0);
+    exit();
 }

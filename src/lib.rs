@@ -1,0 +1,16 @@
+pub mod utils;
+
+pub fn help() {
+    println!(
+        r#"moix OPTION PATH
+
+Options:
+  init   - Create a directory with basic files
+  build  - Generates a compressed file of dist/index.html
+  dev    - Start a web server with port http://localhost:8080"#
+    );
+}
+
+pub fn exit() {
+    std::process::exit(0);
+}
