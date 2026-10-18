@@ -1,6 +1,8 @@
 use std::fs;
 use std::path::PathBuf;
 
+const DIRS: [&str; 5] = ["api", "data", "templates", "dist/css", "dist/js"];
+
 pub const FILES: [&str; 6] = [
     "dist/index.html",
     "dist/icons.svg",
@@ -9,8 +11,6 @@ pub const FILES: [&str; 6] = [
     ".gitignore",
     ".env",
 ];
-
-const DIRS: [&str; 5] = ["api", "data", "templates", "dist/css", "dist/js"];
 
 pub fn handle(path_str: &str) {
     let path = PathBuf::from(path_str);

@@ -15,7 +15,7 @@ async fn main(_spawn: Spawner) {
         // "cdn" => remote::cdn::handle(path, args),
         // "api" => remote::api::handle(path, args),
         // Utils
-        // "build" => utils::build::handle(path),
+        (Some("build"), Some(path_str)) => utils::build::handle(path_str),
         (Some("init"), Some(path_str)) => utils::init::handle(path_str),
         (Some("b64"), Some(path_str)) => utils::b64::encode_path(path_str),
         _ => help(),
