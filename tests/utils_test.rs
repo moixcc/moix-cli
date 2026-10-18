@@ -1,4 +1,4 @@
-use moix_cli::utils::{b64, build, init};
+use moix_cli::utils::{Config, b64, build, init};
 use std::{fs, path::PathBuf};
 
 #[test]
@@ -37,7 +37,7 @@ fn init_exists_files() {
     for file_name in init::FILES {
         let file = path.join(file_name);
 
-        assert!(file.exists())
+        assert!(file.exists());
     }
 }
 
@@ -49,4 +49,13 @@ fn build_index_bin() {
     build::handle(path_str);
 
     assert!(index_bin.exists());
+}
+
+#[test]
+fn config_mimetype_json() {
+    let path = PathBuf::from("./example");
+    let config = Config::new(&path);
+    let mimetype = config.get_mimetype(&path.join("cdn/data.json"));
+
+    assert_eq!(mimetype, "application/json".to_string());
 }

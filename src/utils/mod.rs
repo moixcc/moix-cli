@@ -1,6 +1,6 @@
 pub mod b64;
 pub mod build;
+mod config;
 pub mod init;
-// pub mod config;
 
-// pub use config::Config;
+pub use config::Config;
