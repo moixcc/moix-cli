@@ -2,7 +2,7 @@ use moix_cli::utils::{Config, b64, build, init};
 use std::{fs, path::PathBuf};
 
 #[test]
-fn init_example() {
+fn init_example_files() {
     init::handle("./example");
 
     for file_name in init::FILES {

@@ -1,5 +1,3 @@
-use std::fs;
-
 use crate::local::{AppState, not_found};
 use axum::{
     Router,
@@ -8,6 +6,7 @@ use axum::{
     response::IntoResponse,
     routing::{any, get},
 };
+use std::fs;
 
 pub fn router() -> Router<AppState> {
     Router::new()

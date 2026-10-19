@@ -1,12 +1,14 @@
 use std::{fs, path::PathBuf};
 
-pub const FILES: [&str; 6] = [
+pub const FILES: [&str; 8] = [
     "index.html",
     "css/1-style.css",
     "js/1-script.js",
     "icons.svg",
     "templates/not-found.html",
     "favicon.png",
+    ".gitignore",
+    ".env",
 ];
 
 pub fn handle(path_str: &str) {
@@ -35,6 +37,8 @@ fn get_contents(file_name: &str) -> &'static str {
         "templates/not-found.html" => {
             "<template id=\"template/not-found\"><h1>404</h1><h2>No Found</h2></template>"
         }
+        ".gitignore" => "/index.min.html\n.env",
+        ".env" => "DEPLOY_URL=\"http://localhost:8080\"\nDEPLOY_TOKEN=\"\"",
         _ => "",
     }
 }

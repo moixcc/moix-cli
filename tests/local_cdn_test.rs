@@ -21,3 +21,9 @@ async fn cdn_get_data() {
 
     assert_eq!(response.status(), StatusCode::OK)
 }
+
+#[tokio::test]
+async fn cdn_set_user() {}
+
+#[tokio::test]
+async fn cdn_del_user() {}
