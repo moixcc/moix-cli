@@ -2,6 +2,22 @@ use moix_cli::utils::{Config, b64, build, init};
 use std::{fs, path::PathBuf};
 
 #[test]
+fn init_example() {
+    init::handle("./example");
+
+    for file_name in init::FILES {
+        assert!(PathBuf::from("./example/").join(file_name).exists());
+    }
+}
+
+#[test]
+fn build_index_min() {
+    build::handle("./example");
+
+    assert!(PathBuf::from("./example/index.min.html").exists());
+}
+
+#[test]
 fn b64_encode_bytes() {
     let base_str = "Hello,  Moix!";
     let b64_str = b64::encode_bytes(base_str.as_bytes());
@@ -25,30 +41,6 @@ fn b64_encode_path_str() {
     let contents_txt = fs::read_to_string(path.clone()).unwrap();
 
     assert_eq!(contents_b64, contents_txt);
-}
-
-#[test]
-fn init_exists_files() {
-    let path_str = "./example";
-    let path = PathBuf::from(path_str);
-
-    init::handle(path_str);
-
-    for file_name in init::FILES {
-        let file = path.join(file_name);
-
-        assert!(file.exists());
-    }
-}
-
-#[test]
-fn build_index_bin() {
-    let path_str = "./example";
-    let index_bin = PathBuf::from(path_str).join("index.bin");
-
-    build::handle(path_str);
-
-    assert!(index_bin.exists());
 }
 
 #[test]

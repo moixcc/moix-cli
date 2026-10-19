@@ -11,7 +11,3 @@ Options:
   dev    - Start a web server with port http://localhost:8080"#
     );
 }
-
-pub fn exit() {
-    std::process::exit(0);
-}

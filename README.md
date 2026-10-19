@@ -1,6 +1,6 @@
 # Moix Client
 
-Create a compressed (`Brotli`) version of index.html with SVG, JavaScript, CSS and Templates.
+Create a compressed version of index.html with SVG, JavaScript, CSS and Templates.
 
 ```bash
 # moix OPTION PATH

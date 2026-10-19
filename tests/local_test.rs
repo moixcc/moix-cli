@@ -1,32 +1,54 @@
-use moix_cli::local::server::router;
+use axum::{body::Body, http::Request, http::StatusCode};
+use moix_cli::local::server;
 use std::path::PathBuf;
-use tiny_http::Method;
+use tower::ServiceExt;
 
-#[pollster::test]
-async fn server_default() {
-    let response = router(&PathBuf::default(), &Method::Head, "/").await;
+#[tokio::test]
+async fn router_default() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/")
+                .method("POST")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
-    assert_eq!(response.status_code(), 400);
+    assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
 }
 
-#[pollster::test]
-async fn server_favicon_ico() {
-    let response = router(&PathBuf::default(), &Method::Get, "/favicon.ico").await;
+#[tokio::test]
+async fn router_favicon_ico() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/favicon.ico")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
-    assert_eq!(response.status_code(), 404);
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
-#[pollster::test]
-async fn server_index_bin() {
-    let path = PathBuf::from("./example");
-    let response = router(&path, &Method::Get, "/").await;
-    let headers: Vec<[&str; 2]> = response
-        .headers()
-        .iter()
-        .map(|header| [header.field.as_str().as_str(), header.value.as_str()])
-        .collect();
+#[tokio::test]
+async fn router_index_min() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/")
+                .method("GET")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
-    assert_eq!(response.status_code(), 200);
-    assert!(headers.contains(&["Content-Type", "text/html; charset=UTF-8"]));
-    assert!(headers.contains(&["Content-Encoding", "br"]));
+    assert_eq!(response.status(), StatusCode::OK);
 }

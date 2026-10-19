@@ -1,58 +1,66 @@
-use brotli::CompressorWriter;
-use html_minifier::HTMLMinifier;
-use std::fs;
-use std::io::Write;
-use std::path::PathBuf;
-use walkdir::WalkDir;
-
-const QUALITY: u32 = 11; // Brotli Level
-const LGWIN: u32 = 24; // Brotli Memory
+use std::{fs, path::PathBuf};
 
 pub fn handle(path_str: &str) {
     let path = PathBuf::from(path_str);
 
     // Contents
-    let contents_favicon = read_favicon(path.join("dist/favicon.png"));
-    let contents_css = read_dir_ext(path.join("dist/css"), "css");
-    let contents_js = read_dir_ext(path.join("dist/js"), "js");
-    let contents_icons = fs::read(path.join("dist/icons.svg")).unwrap_or_default();
-    let contents_templates = read_dir_ext(path.join("templates"), "html");
-    let contents_index = fs::read(path.join("dist/index.html")).unwrap_or_default();
+    let contents_favicon = read_favicon(path.join("favicon.png"));
+    let contents_css = read_contents(path.join("css"), "css");
+    let contents_js = read_contents(path.join("js"), "js");
+    let contents_icons = fs::read(path.join("icons.svg")).unwrap_or_default();
+    let contents_templates = read_contents(path.join("templates"), "html");
+    let contents_index = fs::read(path.join("index.html")).unwrap_or_default();
 
     // Append contents
     let mut head: Vec<u8> = vec![];
     let mut body: Vec<u8> = vec![];
+
     //-- Favicon
     head.extend(b"<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,");
     head.extend(contents_favicon);
     head.extend(b"\"/>");
     //-- CSS
-    head.extend(b"\n<style>");
+    head.extend(b"<style>");
     head.extend(contents_css);
-    head.extend(b"</style>\n");
+    head.extend(b"</style>");
     //-- Icons
     body.extend(contents_icons);
     //-- JavaScript
-    body.extend(b"\n<script type=\"module\">");
+    body.extend(b"<script type=\"module\">");
     body.extend(contents_js);
-    body.extend(b"</script>\n");
+    body.extend(b"</script>");
     //-- Templates
     body.extend(contents_templates);
 
     let contents_index = append_contents(&contents_index, b"</head>", &head);
     let contents_index = append_contents(&contents_index, b"</body>", &body);
 
-    // Minify
-    let mut minify = HTMLMinifier::new();
-    let _ = minify.digest(&contents_index);
+    // index.min.html
+    let index_min = path.join("index.min.html");
+    let _ = fs::write(&index_min, contents_index);
 
-    // Compress
-    let mut writer = CompressorWriter::new(Vec::new(), 0, QUALITY, LGWIN);
-    let _ = writer.write_all(minify.get_html());
+    println!("{}", index_min.display());
+}
 
-    // index.bin
-    let index_bin = path.join("index.bin");
-    let _ = fs::write(&index_bin, writer.into_inner());
+fn read_contents(path: PathBuf, ext: &str) -> Vec<u8> {
+    let mut contents: Vec<u8> = Vec::new();
+
+    if path.is_dir() {
+        for entry in fs::read_dir(path).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+
+            let sub_contents = read_contents(path, ext);
+            contents.extend(sub_contents);
+        }
+    } else {
+        if path.extension().unwrap() == ext {
+            let bytes = fs::read(path).unwrap_or_default();
+            contents.extend(bytes);
+        }
+    }
+
+    contents
 }
 
 fn append_contents(base: &[u8], pattern: &[u8], contents: &[u8]) -> Vec<u8> {
@@ -71,21 +79,6 @@ fn append_contents(base: &[u8], pattern: &[u8], contents: &[u8]) -> Vec<u8> {
     }
 
     result
-}
-
-fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
-    let mut contents = Vec::new();
-
-    for entry in WalkDir::new(path_dir).into_iter().filter_map(|e| e.ok()) {
-        let path = entry.path();
-
-        if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {
-            let bytes = fs::read(path).unwrap_or_default();
-            contents.extend(bytes);
-        }
-    }
-
-    contents
 }
 
 fn read_favicon(path: PathBuf) -> Vec<u8> {

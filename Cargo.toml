@@ -3,7 +3,7 @@ name = "moix-cli"
 version = "0.0.3"
 edition = "2024"
 authors = ["Moix Dev <dev@moix.cc>"]
-description = "Create a compressed (Brotli) version of index.html with SVG, JavaScript, CSS and Templates."
+description = "Create a compressed version of index.html with SVG, JavaScript, CSS and Templates."
 categories = ["development-tools", "command-line-utilities", "web-programming"]
 repository = "https://github.com/moixcc/moix-cli"
 readme = "README.md"
@@ -23,21 +23,21 @@ strip = true
 overflow-checks = false
 
 [dev-dependencies]
-pollster = { version = "1.0", features = ["macro"] }
+tower = "0.5"
 
 [dependencies]
-base64 = "0.23"
-brotli = "9.0"
-dotenvy = "0.15"
-embassy-executor = { version = "0.10", features = [
-    "executor-thread",
-    "platform-std",
+axum = { version = "0.8", default-features = false, features = [
+    "original-uri",
+    "tokio",
+    "http1",
 ] }
-html-minifier = "6.0"
-minreq = { version = "3.0", features = ["https-native-tls"] }
-rhai = { version = "1.26", features = ["serde"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tiny_http = "0.12"
-toml = "1.1"
-walkdir = "2.5"
+base64 = { version = "0.23", default-features = false }
+reqwest = { version = "0.13", default-features = false, features = [
+    "native-tls",
+] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+tokio = { version = "1.53", features = ["full"] }
+toml = { version = "1.1", default-features = false, features = [
+    "parse",
+    "serde",
+] }

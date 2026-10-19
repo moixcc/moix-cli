@@ -1,5 +1,6 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use std::fs;
 use std::path::PathBuf;
 
 pub fn encode_bytes(bytes: &[u8]) -> String {
@@ -7,7 +8,7 @@ pub fn encode_bytes(bytes: &[u8]) -> String {
 }
 
 pub fn from_path(path: &PathBuf) -> Option<String> {
-    if let Ok(bytes) = std::fs::read(&path) {
+    if let Ok(bytes) = fs::read(&path) {
         return Some(encode_bytes(&bytes));
     }
 
@@ -20,7 +21,7 @@ pub fn encode_path(path_str: &str) {
     if let Some(contents) = from_path(&path) {
         path.add_extension("txt");
 
-        let _ = std::fs::write(&path, contents.as_str());
+        let _ = fs::write(&path, contents.as_str());
 
         println!("{}", path.display());
     }

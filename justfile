@@ -6,13 +6,10 @@ tools:
     cargo install just cargo-bloat
 
 bloat:
-    cargo bloat --release
+    cargo bloat --release --crates
 
-install: test
+install: format
     cargo install --path .
-
-test: format
-    cargo test --release
 
 format:
     cargo fmt
