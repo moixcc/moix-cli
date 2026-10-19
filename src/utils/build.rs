@@ -35,6 +35,9 @@ pub fn handle(path_str: &str) {
     let contents_index = append_contents(&contents_index, b"</head>", &head);
     let contents_index = append_contents(&contents_index, b"</body>", &body);
 
+    // Clean contents
+    let contents_index = clean_contents(contents_index);
+
     // index.min.html
     let index_min = path.join("index.min.html");
     let _ = fs::write(&index_min, contents_index);
@@ -75,6 +78,29 @@ fn append_contents(base: &[u8], pattern: &[u8], contents: &[u8]) -> Vec<u8> {
         } else {
             result.push(base[size]);
             size += 1;
+        }
+    }
+
+    result
+}
+
+fn clean_contents(input: Vec<u8>) -> Vec<u8> {
+    let mut result = Vec::with_capacity(input.len());
+    let mut is_last_space = false;
+
+    for b in input {
+        match b {
+            b'\n' | b'\r' => {}
+            b' ' => {
+                if !is_last_space {
+                    result.push(b);
+                    is_last_space = true;
+                }
+            }
+            _ => {
+                result.push(b);
+                is_last_space = false;
+            }
         }
     }
 

@@ -1,1 +1,8 @@
-*{font-size:inherit;color:inherit;}
+* {
+    font-size: 24pt;
+    color: inherit;
+}
+
+form {
+    margin-block: 1em;
+}
