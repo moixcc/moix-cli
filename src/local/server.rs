@@ -1,4 +1,7 @@
-use crate::local::{AppState, api, cdn, db, not_found};
+use crate::{
+    local::{AppState, api, cdn, db, not_found},
+    utils::Config,
+};
 use axum::{
     Router,
     extract::{OriginalUri, State},
@@ -16,7 +19,9 @@ pub async fn handle(path_str: &str) {
 }
 
 pub fn router(path: PathBuf) -> Router {
-    let state = AppState { path };
+    let config = Config::new(&path);
+    let state = AppState { path, config };
+
     Router::new()
         // Services
         .nest("/cdn", cdn::router())

@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use toml;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, Clone)]
 pub struct Config {
     mimetype: HashMap<String, String>,
 }
