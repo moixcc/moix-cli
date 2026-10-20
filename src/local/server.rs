@@ -14,6 +14,7 @@ use tokio::net::TcpListener;
 
 pub async fn handle(path_str: &str) {
     println!("http://localhost:8080");
+
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
     let _ = axum::serve(listener, router(PathBuf::from(path_str))).await;
 }
@@ -35,7 +36,7 @@ pub fn router(path: PathBuf) -> Router {
         .with_state(state)
 }
 
-async fn index_min(OriginalUri(uri): OriginalUri, state: State<AppState>) -> impl IntoResponse {
+async fn index_min(state: State<AppState>, uri: OriginalUri) -> impl IntoResponse {
     println!("GET {}", uri.path());
 
     let bytes = fs::read(state.path.join("index.min.html")).unwrap();

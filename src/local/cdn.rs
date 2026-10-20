@@ -14,8 +14,8 @@ pub fn router() -> Router<AppState> {
         .route("/{*path}", any(not_found))
 }
 
-async fn get_contents(OriginalUri(uri): OriginalUri, state: State<AppState>) -> impl IntoResponse {
-    println!("GET {}", uri);
+async fn get_contents(state: State<AppState>, uri: OriginalUri) -> impl IntoResponse {
+    println!("GET {}", uri.path());
 
     let file_path_str = uri.path().trim_start_matches('/');
     let file_path = state.path.join(file_path_str);

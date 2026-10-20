@@ -14,5 +14,5 @@ pub struct AppState {
 }
 
 pub async fn not_found() -> impl IntoResponse {
-    (StatusCode::NOT_FOUND, "")
+    (StatusCode::NOT_FOUND).into_response()
 }
