@@ -28,7 +28,7 @@ pub async fn handle(client_parts: Parts, client_body: Bytes, path_file: PathBuf)
         .compile_file_with_scope(&mut scope, path_file)
         .unwrap();
 
-    let method_str = client_parts.method.to_string();
+    let method_str = client_parts.method.to_string().to_lowercase();
     let request = ApiRequest::new(method_str.clone(), client_body);
     let context = ApiContext::new();
 
