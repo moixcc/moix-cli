@@ -4,7 +4,7 @@ mod response;
 
 use axum::{
     body::{Body, Bytes},
-    http::request::Parts,
+    http::{StatusCode, request::Parts},
     response::Response,
 };
 use context::ApiContext;
@@ -49,5 +49,11 @@ pub async fn handle(client_parts: Parts, client_body: Bytes, path_file: PathBuf)
             Err(err)
         });
 
-    result.unwrap().response()
+    match result {
+        Ok(api_response) => api_response.response(),
+        Err(error) => Response::builder()
+            .status(StatusCode::NOT_IMPLEMENTED)
+            .body(Body::from(error.to_string()))
+            .unwrap(),
+    }
 }

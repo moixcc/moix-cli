@@ -7,13 +7,7 @@ use tower::ServiceExt;
 async fn router_default() {
     let app = server::router(PathBuf::from("./example"));
     let response = app
-        .oneshot(
-            Request::builder()
-                .uri("/")
-                .method("POST")
-                .body(Body::empty())
-                .unwrap(),
-        )
+        .oneshot(Request::post("/").body(Body::empty()).unwrap())
         .await
         .unwrap();
 
@@ -24,12 +18,7 @@ async fn router_default() {
 async fn router_favicon_ico() {
     let app = server::router(PathBuf::from("./example"));
     let response = app
-        .oneshot(
-            Request::builder()
-                .uri("/favicon.ico")
-                .body(Body::empty())
-                .unwrap(),
-        )
+        .oneshot(Request::get("/favicon.ico").body(Body::empty()).unwrap())
         .await
         .unwrap();
 
@@ -40,13 +29,7 @@ async fn router_favicon_ico() {
 async fn router_index_min() {
     let app = server::router(PathBuf::from("./example"));
     let response = app
-        .oneshot(
-            Request::builder()
-                .uri("/")
-                .method("GET")
-                .body(Body::empty())
-                .unwrap(),
-        )
+        .oneshot(Request::get("/").body(Body::empty()).unwrap())
         .await
         .unwrap();
 

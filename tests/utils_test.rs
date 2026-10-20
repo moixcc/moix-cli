@@ -19,8 +19,8 @@ fn build_index_min() {
 
 #[test]
 fn b64_encode_bytes() {
-    let base_str = "Hello,  Moix!";
-    let b64_str = b64::encode_bytes(base_str.as_bytes());
+    let text = "Hello,  Moix!";
+    let b64_str = b64::encode_bytes(text.as_bytes());
 
     assert_eq!(b64_str, "SGVsbG8sICBNb2l4IQ==");
 }
@@ -38,16 +38,16 @@ fn b64_encode_path_str() {
 
     assert!(path.exists());
 
-    let contents_txt = fs::read_to_string(path.clone()).unwrap();
+    let contents_str = fs::read_to_string(path.clone()).unwrap();
 
-    assert_eq!(contents_b64, contents_txt);
+    assert_eq!(contents_b64, contents_str);
 }
 
 #[test]
 fn config_mimetype_json() {
     let path = PathBuf::from("./example");
     let config = Config::new(&path);
-    let mimetype = config.get_mimetype(&path.join("cdn/data.json"));
+    let mimetype_str = config.get_mimetype(&path.join("cdn/data.json"));
 
-    assert_eq!(mimetype, "application/json".to_string());
+    assert_eq!(mimetype_str, "application/json".to_string());
 }

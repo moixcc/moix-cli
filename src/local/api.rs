@@ -2,7 +2,7 @@ use crate::api;
 use crate::local::AppState;
 use axum::{
     Router,
-    body::{Body, Bytes, to_bytes},
+    body::{Body, to_bytes},
     extract::{OriginalUri, Request, State},
     http::StatusCode,
     response::{IntoResponse, Response},

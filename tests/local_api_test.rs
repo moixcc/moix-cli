@@ -6,25 +6,42 @@ use moix_cli::local::server;
 use std::path::PathBuf;
 use tower::ServiceExt;
 
+const LIMIT: usize = usize::MAX;
+
+#[tokio::test]
+async fn api_none() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(Request::get("/api/none").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::NOT_IMPLEMENTED);
+
+    let body_bytes = to_bytes(response.into_body(), LIMIT).await.unwrap();
+
+    assert_eq!(&body_bytes[..], b"Function not found: on");
+}
+
 #[tokio::test]
 async fn api_hello() {
     let app = server::router(PathBuf::from("./example"));
     let response = app
         .oneshot(
             Request::builder()
+                .method("QUERY")
                 .uri("/api/hello")
                 .body(Body::empty())
                 .unwrap(),
         )
         .await
         .unwrap();
-    let status = response.status();
-    let body = response.into_body();
-    let bytes = to_bytes(body, usize::MAX).await.unwrap();
-    let body_str = String::from_utf8(bytes.to_vec()).unwrap();
 
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(body_str, "Hello MOIX!");
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = to_bytes(response.into_body(), LIMIT).await.unwrap();
+
+    assert_eq!(&body_bytes[..], b"Hello MOIX!");
 }
 
 #[tokio::test]
