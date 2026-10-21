@@ -12,10 +12,10 @@ fn on(req, ctx) {
 fn on_get(req, ctx) {
     let data = #{
         username: "moix",
-        email: "dev@moix.cc",
         urls: ["https://moix.cc", "https://api.moix.cc"]
     };
 
+    // keys sorted by default
     response.json(data)
 }
 
@@ -23,7 +23,7 @@ fn on_post(req, ctx) {
     let data = req.json;
 
     if data == () {
-        return response.error("", 400);
+        return response.error("", 406);
     }
 
     response.json(data)
