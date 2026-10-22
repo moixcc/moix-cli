@@ -4,16 +4,22 @@ mod response;
 
 use axum::{
     body::{Body, Bytes},
-    http::{StatusCode, request::Parts},
+    http::{HeaderMap, StatusCode},
     response::Response,
 };
 use context::ApiContext;
 use request::ApiRequest;
 use response::ApiResponse;
 use rhai::{AST, Engine, EvalAltResult, Scope};
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
-pub async fn handle(client_parts: Parts, client_body: Bytes, path_file: PathBuf) -> Response<Body> {
+pub async fn handle(
+    method: String,
+    headers: HeaderMap,
+    form_data: HashMap<String, String>,
+    body: Bytes,
+    path_file: PathBuf,
+) -> Response<Body> {
     let mut engine = Engine::new();
 
     engine.build_type::<ApiResponse>();
@@ -28,11 +34,11 @@ pub async fn handle(client_parts: Parts, client_body: Bytes, path_file: PathBuf)
         .compile_file_with_scope(&mut scope, path_file)
         .unwrap();
 
-    let method_str = client_parts.method.to_string().to_lowercase();
-    let request = ApiRequest::new(method_str.clone(), client_body);
+    let request = ApiRequest::new(method.clone(), headers, body, form_data);
+
     let context = ApiContext::new();
 
-    let target_fn = format!("on_{}", method_str);
+    let target_fn = format!("on_{}", method);
     let result: Result<ApiResponse, Box<EvalAltResult>> = engine
         .call_fn(
             &mut scope,

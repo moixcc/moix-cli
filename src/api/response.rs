@@ -1,15 +1,15 @@
 use axum::{
     body::{Body, Bytes},
-    http::{HeaderName, HeaderValue, Response, StatusCode},
+    http::{HeaderName, Response, StatusCode},
 };
 use rhai::{CustomType, Dynamic, TypeBuilder};
 use serde_json::Value;
-use std::{collections::BTreeMap, str::FromStr};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct ApiResponse {
     status: u16,
-    headers: BTreeMap<String, String>,
+    headers: HashMap<String, String>,
     body: Bytes,
 }
 
@@ -17,7 +17,7 @@ impl ApiResponse {
     pub fn new() -> Self {
         Self {
             status: 500,
-            headers: BTreeMap::new(),
+            headers: HashMap::new(),
             body: Bytes::new(),
         }
     }
@@ -31,10 +31,9 @@ impl ApiResponse {
         let headers = response.headers_mut();
 
         for (key, value) in self.headers.iter() {
-            let name = HeaderName::from_str(key).unwrap();
-            let value = HeaderValue::from_str(value).unwrap();
+            let name = HeaderName::from_bytes(key.as_bytes()).unwrap();
 
-            headers.insert(name, value);
+            headers.insert(name, value.parse().unwrap());
         }
 
         response
@@ -65,7 +64,11 @@ impl ApiResponse {
         self.clone()
     }
 
-    fn header(&self, _name: &str) {}
+    fn header(&mut self, name: &str, value: &str) -> Self {
+        self.headers.insert(name.to_string(), value.to_string());
+
+        self.clone()
+    }
 }
 
 impl CustomType for ApiResponse {
@@ -74,6 +77,7 @@ impl CustomType for ApiResponse {
             .with_name("Response")
             .with_fn("ok", Self::ok)
             .with_fn("error", Self::error)
-            .with_fn("json", Self::json);
+            .with_fn("json", Self::json)
+            .with_fn("header", Self::header);
     }
 }

@@ -1,23 +1,30 @@
 use axum::body::Bytes;
+use axum::http::HeaderMap;
 use rhai::{CustomType, Dynamic, ImmutableString, TypeBuilder};
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::mem;
 
 #[derive(Debug, Clone)]
 pub struct ApiRequest {
     method: String,
-    headers: BTreeMap<String, String>,
+    headers: HeaderMap,
     body: Bytes,
+    form_data: HashMap<String, String>,
 }
 
 impl ApiRequest {
-    pub fn new(method: String, body: Bytes) -> Self {
-        let headers = BTreeMap::new();
-
+    pub fn new(
+        method: String,
+        headers: HeaderMap,
+        body: Bytes,
+        form_data: HashMap<String, String>,
+    ) -> Self {
         Self {
             method,
             headers,
             body,
+            form_data,
         }
     }
 
@@ -26,18 +33,32 @@ impl ApiRequest {
     }
 
     fn text(&mut self) -> ImmutableString {
-        String::from_utf8_lossy(&self.body).to_string().into()
+        let body = mem::take(&mut self.body);
+
+        String::from_utf8_lossy(&body).to_string().into()
     }
 
     fn json(&mut self) -> Dynamic {
-        if let Ok(json_val) = serde_json::from_slice::<Value>(&self.body) {
+        let body = mem::take(&mut self.body);
+
+        if let Ok(json_val) = serde_json::from_slice::<Value>(&body) {
             rhai::serde::to_dynamic(json_val).unwrap_or_default()
         } else {
             Dynamic::UNIT
         }
     }
 
-    fn header(&self, _name: &str) {}
+    fn header(&mut self, name: &str) -> ImmutableString {
+        if let Some(value) = self.headers.get(name) {
+            return value.to_str().unwrap().into();
+        }
+
+        String::new().into()
+    }
+
+    fn form(&mut self, _name: &str) -> ImmutableString {
+        String::new().into()
+    }
 }
 
 impl CustomType for ApiRequest {
@@ -46,6 +67,8 @@ impl CustomType for ApiRequest {
             .with_name("Request")
             .with_get("method", Self::method)
             .with_get("text", Self::text)
-            .with_get("json", Self::json);
+            .with_get("json", Self::json)
+            .with_fn("header", Self::header)
+            .with_fn("form", Self::form);
     }
 }

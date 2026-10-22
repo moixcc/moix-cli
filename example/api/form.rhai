@@ -1,11 +1,8 @@
 fn on_post(req, ctx) {
-    response.ok("form")
-}
+    let form_data = #{
+        type: req.header("Content-Type"),
+        email: req.form("email")
+    };
 
-fn on_put(req, ctx) {
-    response.ok("form")
-}
-
-fn on_delete(req, ctx) {
-    response.ok("form")
+    response.json(form_data);
 }

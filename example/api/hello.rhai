@@ -1,3 +1,3 @@
 fn on(req, ctx) {
-    response.ok("Hello MOIX!")
+    response.ok("Hello MOIX!");
 }

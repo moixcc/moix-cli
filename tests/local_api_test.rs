@@ -1,6 +1,6 @@
 use axum::{
     body::{Body, to_bytes},
-    http::{Request, StatusCode},
+    http::{HeaderValue, Request, StatusCode},
 };
 use moix_cli::local::server;
 use std::path::PathBuf;
@@ -72,4 +72,37 @@ async fn api_methods() {
             assert_eq!(&body_bytes[..], method.to_lowercase().as_bytes());
         }
     }
+}
+
+#[tokio::test]
+async fn api_headers() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(
+            Request::get("/api/header")
+                .header("Content-Type", "multipart/form-data")
+                .header("Host", "localhost:8080")
+                .header("X-Token", "token")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let headers = response.headers();
+
+    assert_eq!(
+        headers.get("content-type"),
+        Some(&HeaderValue::from_bytes(b"multipart/form-data").unwrap())
+    );
+
+    assert_eq!(
+        headers.get("host"),
+        Some(&HeaderValue::from_bytes(b"localhost:8080").unwrap())
+    );
+
+    assert_eq!(
+        headers.get("x-token"),
+        Some(&HeaderValue::from_bytes(b"token").unwrap())
+    );
 }

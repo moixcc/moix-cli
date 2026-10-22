@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::api;
 use crate::local::AppState;
 use axum::{
@@ -21,11 +23,19 @@ async fn handle(state: State<AppState>, uri: OriginalUri, request: Request) -> i
 
     if file.exists() {
         let (parts, body) = request.into_parts();
-        let body_bytes = to_bytes(body, usize::MAX).await.unwrap();
 
         println!("{} {} | {}", parts.method, uri.path(), file.display());
 
-        return api::handle(parts, body_bytes, file).await;
+        let body_bytes = to_bytes(body, usize::MAX).await.unwrap();
+
+        return api::handle(
+            parts.method.to_string().to_lowercase(),
+            parts.headers,
+            HashMap::new(),
+            body_bytes,
+            file,
+        )
+        .await;
     }
 
     Response::builder()

@@ -2,11 +2,13 @@
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
 
 fn on(req, ctx) {
-    if req.text == "" {
-        return response.error("", 400);
-    }
+    let text = req.text; // Consumes the Body
 
-    response.ok(req.text)
+    if text == "" {
+        response.error("", 400);
+    } else {
+        response.ok(text);
+    }
 }
 
 fn on_get(req, ctx) {
@@ -16,15 +18,15 @@ fn on_get(req, ctx) {
     };
 
     // keys sorted by default
-    response.json(data)
+    response.json(data);
 }
 
 fn on_post(req, ctx) {
-    let data = req.json;
+    let data = req.json; // Consumes the Body
 
     if data == () {
         return response.error("", 406);
     }
 
-    response.json(data)
+    response.json(data);
 }
