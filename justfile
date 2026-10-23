@@ -1,9 +1,10 @@
-# cargo install just
+# cargo install --locked just
 all:
     just --list
 
 tools:
-    cargo install just cargo-bloat
+    cargo install --locked \
+        just just-lsp cargo-bloat
 
 bloat:
     cargo bloat --release --crates
