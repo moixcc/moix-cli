@@ -1,6 +1,6 @@
 fn on_post(req, ctx) {
     let form_data = #{
-        type: req.header("Content-Type"),
+        type: req.header("content-type"),
         email: req.form("email")
     };
 

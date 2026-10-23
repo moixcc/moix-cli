@@ -56,7 +56,11 @@ impl ApiRequest {
         String::new().into()
     }
 
-    fn form(&mut self, _name: &str) -> ImmutableString {
+    fn form(&mut self, name: &str) -> ImmutableString {
+        if let Some(value) = self.form_data.get(name) {
+            return value.into();
+        }
+
         String::new().into()
     }
 }

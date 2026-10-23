@@ -80,7 +80,7 @@ async fn api_headers() {
     let response = app
         .oneshot(
             Request::get("/api/header")
-                .header("Content-Type", "multipart/form-data")
+                .header("Content-Type", "application/json")
                 .header("Host", "localhost:8080")
                 .header("X-Token", "token")
                 .body(Body::empty())
@@ -93,7 +93,7 @@ async fn api_headers() {
 
     assert_eq!(
         headers.get("content-type"),
-        Some(&HeaderValue::from_bytes(b"multipart/form-data").unwrap())
+        Some(&HeaderValue::from_bytes(b"application/json").unwrap())
     );
 
     assert_eq!(
