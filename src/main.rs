@@ -12,7 +12,7 @@ async fn main() {
         // local
         (Some("dev"), Some(path_str)) => local::server::handle(path_str).await,
         // Remote
-        (Some("deploy"), Some(path_str)) => remote::deploy::handle(path_str),
+        (Some("deploy"), Some(path_str)) => remote::deploy::handle(path_str).await,
         (Some("cdn"), Some(path_str)) => remote::cdn::handle(path_str, action, uri),
         (Some("api"), Some(path_str)) => remote::api::handle(path_str, action, uri),
         // Utils
