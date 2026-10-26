@@ -4,9 +4,9 @@ Create a compressed version of index.html with SVG, JavaScript, CSS and Template
 
 ```bash
 # moix OPTION PATH
-moix init ./test
-moix build ./test
-moix dev ./test
+moix init
+moix build
+moix dev
 ```
 
 ## Installation

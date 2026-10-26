@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 
 #[test]
 fn init_example_files() {
-    init::handle("./example");
+    init::handle("./example".into());
 
     for file_name in init::FILES {
         assert!(PathBuf::from("./example/").join(file_name).exists());
@@ -12,7 +12,7 @@ fn init_example_files() {
 
 #[test]
 fn build_index_min() {
-    build::handle("./example");
+    build::handle("./example".into());
 
     assert!(PathBuf::from("./example/index.min.html").exists());
 }

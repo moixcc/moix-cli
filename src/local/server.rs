@@ -12,11 +12,11 @@ use axum::{
 use std::{fs, path::PathBuf};
 use tokio::net::TcpListener;
 
-pub async fn handle(path_str: &str) {
+pub async fn handle(path: PathBuf) {
     println!("http://localhost:8080");
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    let _ = axum::serve(listener, router(PathBuf::from(path_str))).await;
+    let _ = axum::serve(listener, router(path)).await;
 }
 
 pub fn router(path: PathBuf) -> Router {

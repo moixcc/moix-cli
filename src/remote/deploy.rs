@@ -2,8 +2,7 @@ use crate::remote::get_env_deploy;
 use reqwest::{self, StatusCode};
 use std::{fs, path::PathBuf};
 
-pub async fn handle(path_str: &str) {
-    let path = PathBuf::from(path_str);
+pub async fn handle(path: PathBuf) {
     let index_file = path.join("index.min.html");
     let index_bytes = match fs::read(&index_file) {
         Ok(bytes) => bytes,
@@ -20,14 +19,16 @@ pub async fn handle(path_str: &str) {
 
 pub async fn put_index_bytes(url: String, token: String, body: Vec<u8>) -> (StatusCode, String) {
     let client = reqwest::Client::new();
-    let response = client
+    let result = client
         .put(url)
         .bearer_auth(token)
         .header("Content-Type", "application/octet-stream")
         .body(body)
         .send()
-        .await
-        .unwrap();
+        .await;
 
-    (response.status(), response.text().await.unwrap())
+    match result {
+        Ok(response) => (response.status(), response.text().await.unwrap()),
+        Err(error) => (StatusCode::BAD_REQUEST, error.to_string()),
+    }
 }

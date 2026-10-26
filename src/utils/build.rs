@@ -1,8 +1,6 @@
 use std::{fs, path::PathBuf};
 
-pub fn handle(path_str: &str) {
-    let path = PathBuf::from(path_str);
-
+pub fn handle(path: PathBuf) {
     // Contents
     let contents_favicon = read_favicon(path.join("favicon.png"));
     let contents_css = read_contents(path.join("css"), "css");

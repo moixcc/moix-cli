@@ -11,9 +11,7 @@ pub const FILES: [&str; 8] = [
     ".env",
 ];
 
-pub fn handle(path_str: &str) {
-    let path = PathBuf::from(path_str);
-
+pub fn handle(path: PathBuf) {
     for file_name in FILES {
         let path_file = path.join(file_name);
 
