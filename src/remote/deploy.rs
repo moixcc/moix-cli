@@ -1,5 +1,4 @@
-use crate::remote::get_env_deploy;
-use reqwest::{self, StatusCode};
+use crate::remote::{get_env_deploy, put_bytes};
 use std::{fs, path::PathBuf};
 
 /// moix deploy
@@ -13,23 +12,13 @@ pub async fn handle(path: PathBuf) {
         }
     };
     let (url, token) = get_env_deploy(&path);
-    let (status, text) = put_index_bytes(format!("{url}/app/index"), token, index_bytes).await;
+    let (status, text) = put_bytes(
+        format!("{}/app/index", url),
+        token,
+        "application/octet-stream".into(),
+        index_bytes,
+    )
+    .await;
 
     println!("{} | {} {}", index_file.display(), status, text);
-}
-
-pub async fn put_index_bytes(url: String, token: String, body: Vec<u8>) -> (StatusCode, String) {
-    let client = reqwest::Client::new();
-    let result = client
-        .put(url)
-        .bearer_auth(token)
-        .header("Content-Type", "application/octet-stream")
-        .body(body)
-        .send()
-        .await;
-
-    match result {
-        Ok(response) => (response.status(), response.text().await.unwrap()),
-        Err(error) => (StatusCode::BAD_REQUEST, error.to_string()),
-    }
 }

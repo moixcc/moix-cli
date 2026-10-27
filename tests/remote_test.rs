@@ -1,16 +1,22 @@
-use moix_cli::remote::deploy;
+use moix_cli::remote;
 use reqwest::StatusCode;
 
 #[tokio::test]
-async fn deploy_index_min() {
-    let (status, _text) =
-        deploy::put_index_bytes("https://httpbin.org/put".into(), "TOKEN".into(), vec![]).await;
+async fn remote_put() {
+    let (status, _text) = remote::put_bytes(
+        "https://httpbin.org/put".into(),
+        "TOKEN".into(),
+        "text/plain".into(),
+        vec![],
+    )
+    .await;
 
     assert_eq!(status, StatusCode::OK);
 }
 
 #[tokio::test]
-async fn cdn_put_remote() {}
+async fn remote_delete() {
+    let (status, _text) = remote::delete("https://httpbin.org/delete".into(), "TOKEN".into()).await;
 
-#[tokio::test]
-async fn api_put_remote() {}
+    assert_eq!(status, StatusCode::OK);
+}
