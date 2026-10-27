@@ -39,6 +39,9 @@ reqwest = { version = "0.13", default-features = false, features = [
     "native-tls",
 ] }
 rhai = { version = "1.27", default-features = false, features = ["serde"] }
+rusqlite = { version = "0.41", default-features = false, features = [
+    "bundled",
+] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.54", features = ["full"] }

@@ -11,6 +11,7 @@ pub const FILES: [&str; 8] = [
     ".env",
 ];
 
+/// moix init
 pub fn handle(path: PathBuf) {
     for file_name in FILES {
         let path_file = path.join(file_name);

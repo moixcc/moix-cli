@@ -2,6 +2,7 @@ use crate::remote::get_env_deploy;
 use reqwest::{self, StatusCode};
 use std::{fs, path::PathBuf};
 
+/// moix deploy
 pub async fn handle(path: PathBuf) {
     let index_file = path.join("index.min.html");
     let index_bytes = match fs::read(&index_file) {

@@ -6,7 +6,7 @@ pub mod utils;
 
 pub fn help() {
     println!(
-        r#"moix OPTION PATH
+        r#"moix OPTION [ARGS]
 
 Options:
   init   - Create a directory with basic files

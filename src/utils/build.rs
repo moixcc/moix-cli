@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf};
 
+/// moix build
 pub fn handle(path: PathBuf) {
     // Contents
     let contents_favicon = read_favicon(path.join("favicon.png"));

@@ -1,5 +1,16 @@
+use crate::{remote::get_env_deploy, utils::Config};
 use std::path::PathBuf;
 
-pub fn handle(path_str: &str, _action: Option<&str>, _uri: Option<&str>) {
-    let _path = PathBuf::from(path_str);
+/// moix api {put | delete} /[uri...] [./path_file]
+pub async fn handle(path: PathBuf, action: &str, _uri: &str, _path_file: Option<&str>) {
+    let (url, token) = get_env_deploy(&path);
+    let config = Config::new(&path);
+
+    match action {
+        "put" => (),
+        "delete" => (),
+        _ => {
+            println!("moix api put [uri] [path_file]");
+        }
+    }
 }

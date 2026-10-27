@@ -3,7 +3,7 @@
 Create a compressed version of index.html with SVG, JavaScript, CSS and Templates.
 
 ```bash
-# moix OPTION PATH
+# moix OPTION [ARGS]
 moix init
 moix build
 moix dev
