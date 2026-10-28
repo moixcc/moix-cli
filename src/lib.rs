@@ -1,5 +1,4 @@
 pub mod api;
-pub mod db;
 pub mod local;
 pub mod remote;
 pub mod utils;

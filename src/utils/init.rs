@@ -1,6 +1,7 @@
 use std::{fs, path::PathBuf};
 
-pub const FILES: [&str; 8] = [
+pub const FILES: [&str; 9] = [
+    "data/kipu.sqlite",
     "index.html",
     "css/1-style.css",
     "js/1-script.js",
@@ -36,7 +37,7 @@ fn get_contents(file_name: &str) -> &'static str {
         "templates/not-found.html" => {
             "<template id=\"template/not-found\"><h1>404</h1><h2>No Found</h2></template>"
         }
-        ".gitignore" => "/index.min.html\n.env",
+        ".gitignore" => "/index.min.html\ndata\n.env",
         ".env" => "DEPLOY_URL=\"http://localhost:8080\"\nDEPLOY_TOKEN=\"\"",
         _ => "",
     }

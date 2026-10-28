@@ -1,5 +1,5 @@
 use crate::{
-    local::{AppState, api, cdn, db, not_found},
+    local::{AppState, api, cdn, not_found},
     utils::Config,
 };
 use axum::{
@@ -28,7 +28,6 @@ pub fn router(path: PathBuf) -> Router {
         // Services
         .nest("/cdn", cdn::router())
         .nest("/api", api::router())
-        .nest("/db", db::router())
         // View
         .route("/favicon.ico", get(not_found))
         .route("/", get(index_min))

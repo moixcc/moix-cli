@@ -10,6 +10,8 @@ use axum::{
 };
 use std::collections::HashMap;
 
+const DATABASE: &str = "data/kipu.sqlite";
+
 #[derive(Debug)]
 pub enum Payload {
     UrlEncoded(HashMap<String, String>),
@@ -46,6 +48,7 @@ async fn handle(
         }
 
         return api::handle(
+            state.path.join(DATABASE),
             method.to_string().to_lowercase(),
             headers,
             form_data,

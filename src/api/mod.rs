@@ -1,7 +1,9 @@
 mod context;
+mod database;
 mod request;
 mod response;
 
+use crate::api::database::ApiDatabase;
 use axum::{
     body::{Body, Bytes},
     http::{HeaderMap, StatusCode},
@@ -14,6 +16,7 @@ use rhai::{AST, Engine, EvalAltResult, Scope};
 use std::{collections::HashMap, path::PathBuf};
 
 pub async fn handle(
+    path_db: PathBuf,
     method: String,
     headers: HeaderMap,
     form_data: HashMap<String, String>,
@@ -25,6 +28,7 @@ pub async fn handle(
     engine.build_type::<ApiResponse>();
     engine.build_type::<ApiRequest>();
     engine.build_type::<ApiContext>();
+    engine.build_type::<ApiDatabase>();
 
     let mut scope = Scope::new();
 
@@ -33,10 +37,9 @@ pub async fn handle(
     let ast: AST = engine
         .compile_file_with_scope(&mut scope, path_file)
         .unwrap();
-
     let request = ApiRequest::new(method.clone(), headers, body, form_data);
-
     let context = ApiContext::new();
+    let database = ApiDatabase::new(path_db);
 
     let target_fn = format!("on_{}", method);
     let result: Result<ApiResponse, Box<EvalAltResult>> = engine
@@ -44,12 +47,12 @@ pub async fn handle(
             &mut scope,
             &ast,
             &target_fn,
-            (request.clone(), context.clone()),
+            (request.clone(), context.clone(), database.clone()),
         )
         .or_else(|err| {
             if let EvalAltResult::ErrorFunctionNotFound(fn_name, _) = err.as_ref() {
                 if fn_name.starts_with(&target_fn) {
-                    return engine.call_fn(&mut scope, &ast, "on", (request, context));
+                    return engine.call_fn(&mut scope, &ast, "on", (request, context, database));
                 }
             }
             Err(err)

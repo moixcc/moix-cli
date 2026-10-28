@@ -1,7 +1,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types/Common_types
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
 
-fn on(req, ctx) {
+fn on(req, ctx, db) {
     let text = req.text; // Consumes the Body
 
     if text == "" {
@@ -11,7 +11,7 @@ fn on(req, ctx) {
     }
 }
 
-fn on_get(req, ctx) {
+fn on_get(req, ctx, db) {
     let data = #{
         username: "moix",
         urls: ["https://moix.cc", "https://api.moix.cc"]
@@ -21,7 +21,7 @@ fn on_get(req, ctx) {
     response.json(data);
 }
 
-fn on_post(req, ctx) {
+fn on_post(req, ctx, db) {
     let data = req.json; // Consumes the Body
 
     if data == () {

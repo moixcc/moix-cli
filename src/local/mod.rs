@@ -1,6 +1,5 @@
 pub mod api;
 pub mod cdn;
-pub mod db;
 pub mod server;
 
 use crate::utils::Config;
