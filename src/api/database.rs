@@ -1,7 +1,7 @@
 use blake3::Hasher;
 use chrono::Utc;
 use rhai::{CustomType, Dynamic, TypeBuilder};
-use rusqlite::Connection;
+use rusqlite::{Connection, params};
 use std::{
     path::PathBuf,
     sync::{Arc, Mutex},
@@ -12,6 +12,14 @@ use uuid::{NoContext, Timestamp, Uuid};
 pub struct ApiDatabase {
     conn: Arc<Mutex<Connection>>,
     name: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Entry {
+    pub id: String,
+    pub nature: i64,
+    pub quantity: i64,
+    pub context: String,
 }
 
 impl ApiDatabase {
@@ -37,6 +45,7 @@ impl ApiDatabase {
                     context TEXT,
                     created_at TEXT, 
                     hash TEXT,
+
                     updated_at TEXT,
                     reference TEXT,
                     metadata TEXT, 
@@ -50,10 +59,8 @@ impl ApiDatabase {
         self.clone()
     }
 
-    pub fn set_entry(&mut self, nature: i8, quantity: u64, context: &str) -> Dynamic {
-        let name = if self.name.len() > 0 {
-            self.name.clone()
-        } else {
+    pub fn set_entry(&mut self, nature: i64, quantity: i64, context: &str) -> Dynamic {
+        if self.name.len() == 0 {
             return Dynamic::UNIT;
         };
 
@@ -80,20 +87,11 @@ impl ApiDatabase {
 
         let result = conn.execute(
             &format!(
-                "INSERT INTO {name}(
-                id, nature, quantity, context, created_at, hash
-            ) VALUES (
-                ?1, ?2, ?3, ?4, ?5, ?6
-            )"
+                "INSERT INTO {} (id, nature, quantity, context, created_at, hash) 
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                self.name
             ),
-            [
-                id.clone(),
-                nature.to_string(),
-                quantity.to_string(),
-                context.to_string(),
-                now.to_rfc3339(),
-                hash,
-            ],
+            params![id, nature, quantity, context, now.to_rfc3339(), hash,],
         );
 
         if result.is_ok() {
@@ -102,6 +100,56 @@ impl ApiDatabase {
             Dynamic::UNIT
         }
     }
+
+    pub fn get_entry(&mut self, id: &str) -> Dynamic {
+        let conn = self.conn.lock().unwrap();
+        let entry: Entry = conn
+            .query_one(
+                &format!(
+                    "SELECT id, nature, quantity, context FROM {} WHERE id = ?1 LIMIT 1",
+                    self.name
+                ),
+                params![id],
+                |row| {
+                    Ok(Entry {
+                        id: row.get(0).unwrap(),
+                        nature: row.get(1).unwrap(),
+                        quantity: row.get(2).unwrap(),
+                        context: row.get(3).unwrap(),
+                    })
+                },
+            )
+            .unwrap();
+
+        Dynamic::from(entry)
+    }
+
+    pub fn set_ref(&mut self, id: &str, reference: &str) {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now();
+
+        conn.execute(
+            &format!(
+                "UPDATE {} SET reference = ?2, updated_at = ?3 WHERE id = ?1",
+                self.name
+            ),
+            params![id, reference, now.to_rfc3339()],
+        )
+        .unwrap();
+    }
+
+    pub fn get_ref(&mut self, id: &str) -> Dynamic {
+        let conn = self.conn.lock().unwrap();
+        let reference: String = conn
+            .query_one(
+                &format!("SELECT reference FROM {} WHERE id = ?1 LIMIT 1", self.name),
+                params![id],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        Dynamic::from(reference)
+    }
 }
 
 impl CustomType for ApiDatabase {
@@ -109,6 +157,9 @@ impl CustomType for ApiDatabase {
         builder
             .with_name("Database")
             .with_fn("space", Self::space)
-            .with_fn("set_entry", Self::set_entry);
+            .with_fn("set_entry", Self::set_entry)
+            .with_fn("get_entry", Self::get_entry)
+            .with_fn("set_ref", Self::set_ref)
+            .with_fn("get_ref", Self::get_ref);
     }
 }
