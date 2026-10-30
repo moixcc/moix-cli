@@ -34,6 +34,8 @@ axum = { version = "0.8", default-features = false, features = [
     "multipart",
 ] }
 base64 = { version = "0.23", default-features = false }
+blake3 = { version = "1.8", default-features = false }
+chrono = { version = "0.4", default-features = false, features = ["now"] }
 dotenvy = "0.15"
 reqwest = { version = "0.13", default-features = false, features = [
     "native-tls",
@@ -49,3 +51,4 @@ toml = { version = "1.1", default-features = false, features = [
     "parse",
     "serde",
 ] }
+uuid = { version = "1.29", default-features = false, features = ["v7"] }

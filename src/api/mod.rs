@@ -1,5 +1,5 @@
-mod context;
-mod database;
+pub mod context;
+pub mod database;
 mod request;
 mod response;
 

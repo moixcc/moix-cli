@@ -1,29 +1,14 @@
-#[tokio::test]
-async fn db_new_kipu() {}
+use std::path::PathBuf;
 
-#[tokio::test]
-async fn db_del_kipu() {}
+use moix_cli::api::database::ApiDatabase;
 
-#[tokio::test]
-async fn db_new_knot() {}
+#[test]
+fn db_kipu() {
+    let mut db = ApiDatabase::new(PathBuf::from("./example/data/test.sqlite"));
 
-#[tokio::test]
-async fn db_get_knot() {}
+    db = db.space("test");
 
-#[tokio::test]
-async fn db_del_knot() {}
+    let id = db.set_entry(0, 1, "context");
 
-#[tokio::test]
-async fn db_filters_knot() {}
-
-#[tokio::test]
-async fn db_get_knot_data() {}
-
-#[tokio::test]
-async fn db_set_knot_data() {}
-
-#[tokio::test]
-async fn db_get_knot_info() {}
-
-#[tokio::test]
-async fn db_set_knot_info() {}
+    assert_ne!(id.to_string(), "");
+}
