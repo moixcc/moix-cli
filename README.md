@@ -1,13 +1,12 @@
 # Moix Client
 
-Create a compressed (`Brotli`) version of index.html with SVG, JavaScript, CSS and Templates.
+Create a compressed version of index.html with SVG, JavaScript, CSS and Templates.
 
 ```bash
-# moix OPTION PATH
-moix init ./test
-moix build ./test
-moix dev ./test
-# http://localhost:8080
+# moix OPTION [ARGS]
+moix init
+moix build
+moix dev
 ```
 
 ## Installation

@@ -1,20 +1,24 @@
-pub fn handle(path: std::path::PathBuf) -> anyhow::Result<()> {
-    let (url, token) = super::get_env_deploy(&path);
-    let index_bytes = std::fs::read(path.join("index.bin"))?;
+use crate::remote::{get_env_deploy, put_bytes};
+use std::{fs, path::PathBuf};
 
-    let response = minreq::put(format!("{url}/app/index"))
-        .with_header("Authorization", &format!("Bearer {token}"))
-        .with_header("Content-Type", "application/octet-stream")
-        .with_header("Content-Encoding", "deflate")
-        .with_body::<Vec<u8>>(index_bytes)
-        .send()?;
+/// moix deploy
+pub async fn handle(path: PathBuf) {
+    let index_file = path.join("index.min.html");
+    let index_bytes = match fs::read(&index_file) {
+        Ok(bytes) => bytes,
+        _ => {
+            println!("Error {}", &index_file.display());
+            return;
+        }
+    };
+    let (url, token) = get_env_deploy(&path);
+    let (status, text) = put_bytes(
+        format!("{}/app/index", url),
+        token,
+        "application/octet-stream".into(),
+        index_bytes,
+    )
+    .await;
 
-    println!(
-        "{}/index.bin | {} {}",
-        path.display(),
-        response.status_code,
-        response.as_str()?
-    );
-
-    Ok(())
+    println!("{} | {} {}", index_file.display(), status, text);
 }

@@ -1,33 +1,16 @@
-# cargo install justfile
+# cargo install --locked just
 all:
     just --list
 
-run: format
-    cargo run
+tools:
+    cargo install --locked \
+        just just-lsp cargo-bloat
 
-moix OPTION PATH: format
-    cargo run -- {{ OPTION }} {{ PATH }}
-
-format:
-    cargo fmt
+bloat:
+    cargo bloat --release --crates
 
 install: format
     cargo install --path .
 
-init:
-    @just moix init ./test
-
-build:
-    @just moix build ./test
-
-dev:
-    @just moix dev ./test
-
-deploy:
-    @just moix deploy ./test
-
-cdn:
-    cargo run -- cdn ./test data.json
-
-b64:
-    @just moix b64 ./test/cdn/data.json
+format:
+    cargo fmt

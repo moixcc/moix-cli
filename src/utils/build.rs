@@ -1,97 +1,115 @@
-use std::{fs, io::Write, path::PathBuf};
+use std::{fs, path::PathBuf};
 
-pub fn handle(path: PathBuf) -> anyhow::Result<()> {
-    // CSS
-    let mut head: Vec<u8> = "<style>".into();
-    head.extend(read_dir_ext(path.join("dist/css"), "css"));
-    head.extend(b"</style>\n");
+/// moix build
+pub fn handle(path: PathBuf) {
+    // Contents
+    let contents_favicon = read_favicon(path.join("favicon.png"));
+    let contents_css = read_contents(path.join("css"), "css");
+    let contents_js = read_contents(path.join("js"), "js");
+    let contents_icons = fs::read(path.join("icons.svg")).unwrap_or_default();
+    let contents_templates = read_contents(path.join("templates"), "html");
+    let contents_index = fs::read(path.join("index.html")).unwrap_or_default();
 
-    // favicon.png
-    let path_favicon = path.join("dist/favicon.png");
+    // Append contents
+    let mut head: Vec<u8> = vec![];
+    let mut body: Vec<u8> = vec![];
 
-    if path_favicon.exists() {
-        let mut favicon: Vec<u8> =
-            r#"<link rel="icon" type="image/png" href="data:image/png;base64,"#.into();
+    //-- Favicon
+    head.extend(b"<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,");
+    head.extend(contents_favicon);
+    head.extend(b"\"/>");
+    //-- CSS
+    head.extend(b"<style>");
+    head.extend(contents_css);
+    head.extend(b"</style>");
+    //-- Icons
+    body.extend(contents_icons);
+    //-- JavaScript
+    body.extend(b"<script type=\"module\">");
+    body.extend(contents_js);
+    body.extend(b"</script>");
+    //-- Templates
+    body.extend(contents_templates);
 
-        if let Some(b64_str) = crate::utils::b64::from_path(&path_favicon) {
-            favicon.extend(b64_str.as_bytes());
-        }
+    let contents_index = append_contents(&contents_index, b"</head>", &head);
+    let contents_index = append_contents(&contents_index, b"</body>", &body);
 
-        favicon.extend(b"\"/>");
-        head.extend(favicon);
-    }
+    // Clean contents
+    let contents_index = clean_contents(contents_index);
 
-    head.extend(b"\n</head>");
+    // index.min.html
+    let index_min = path.join("index.min.html");
+    let _ = fs::write(&index_min, contents_index);
 
-    // JavaScript
-    let mut body: Vec<u8> = "<script type=\"module\">\n".into();
-    body.extend(read_dir_ext(path.join("dist/js"), "js"));
-    body.extend(b"</script>\n");
-
-    // Icons
-    let path_icons = path.join("dist/icons.svg");
-
-    body.extend(fs::read(path_icons).unwrap_or_default());
-
-    // Templates
-    body.extend(read_dir_ext(path.join("templates"), "html"));
-
-    body.extend(b"\n</body>");
-
-    // Replace
-    let path_index = path.join("dist/index.html");
-
-    let contents = fs::read(path_index).unwrap_or_default();
-    let contents = replace(&contents, b"</head>", &head);
-    let contents = replace(&contents, b"</body>", &body);
-
-    // Minify
-    let mut minify = html_minifier::HTMLMinifier::new();
-    minify.digest(&contents)?;
-
-    // Compress
-    let mut writer = brotli::CompressorWriter::new(Vec::new(), 0, 11, 24);
-    writer.write_all(minify.get_html())?;
-
-    // index.bin
-    let path_bin = path.join("index.bin");
-
-    fs::write(&path_bin, writer.into_inner())?;
-
-    Ok(())
+    println!("{}", index_min.display());
 }
 
-fn replace(base: &[u8], pattern: &[u8], content: &[u8]) -> Vec<u8> {
-    let mut result = Vec::new();
-    let mut i = 0;
+fn read_contents(path: PathBuf, ext: &str) -> Vec<u8> {
+    let mut contents: Vec<u8> = Vec::new();
 
-    while i < base.len() {
-        if base[i..].starts_with(pattern) {
-            result.extend_from_slice(content);
-            i += pattern.len();
-        } else {
-            result.push(base[i]);
-            i += 1;
+    if path.is_dir() {
+        for entry in fs::read_dir(path).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+
+            let sub_contents = read_contents(path, ext);
+            contents.extend(sub_contents);
         }
-    }
-
-    result
-}
-
-fn read_dir_ext(path_dir: PathBuf, ext: &str) -> Vec<u8> {
-    let mut contents = Vec::new();
-
-    for entry in walkdir::WalkDir::new(path_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-    {
-        let path = entry.path();
-
-        if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(ext) {
+    } else {
+        if path.extension().unwrap() == ext {
             let bytes = fs::read(path).unwrap_or_default();
             contents.extend(bytes);
         }
     }
 
     contents
+}
+
+fn append_contents(base: &[u8], pattern: &[u8], contents: &[u8]) -> Vec<u8> {
+    let mut result = Vec::new();
+    let mut size = 0;
+
+    while size < base.len() {
+        if base[size..].starts_with(pattern) {
+            result.extend_from_slice(contents);
+            result.extend_from_slice(pattern);
+            size += pattern.len();
+        } else {
+            result.push(base[size]);
+            size += 1;
+        }
+    }
+
+    result
+}
+
+fn clean_contents(input: Vec<u8>) -> Vec<u8> {
+    let mut result = Vec::with_capacity(input.len());
+    let mut is_last_space = false;
+
+    for b in input {
+        match b {
+            b'\n' | b'\r' => {}
+            b' ' => {
+                if !is_last_space {
+                    result.push(b);
+                    is_last_space = true;
+                }
+            }
+            _ => {
+                result.push(b);
+                is_last_space = false;
+            }
+        }
+    }
+
+    result
+}
+
+fn read_favicon(path: PathBuf) -> Vec<u8> {
+    if let Some(b64_str) = crate::utils::b64::from_path(&path) {
+        return b64_str.as_bytes().to_vec();
+    }
+
+    vec![]
 }

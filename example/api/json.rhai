@@ -1,0 +1,32 @@
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types/Common_types
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
+
+fn on(req, ctx, db) {
+    let text = req.text; // Consumes the Body
+
+    if text == "" {
+        response.error("", 400);
+    } else {
+        response.ok(text);
+    }
+}
+
+fn on_get(req, ctx, db) {
+    let data = #{
+        username: "moix",
+        urls: ["https://moix.cc", "https://api.moix.cc"]
+    };
+
+    // keys sorted by default
+    response.json(data);
+}
+
+fn on_post(req, ctx, db) {
+    let data = req.json; // Consumes the Body
+
+    if data == () {
+        return response.error("", 406);
+    }
+
+    response.json(data);
+}

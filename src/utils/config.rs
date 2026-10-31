@@ -1,14 +1,18 @@
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::fs;
 use std::path::PathBuf;
+use toml;
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Default, Deserialize, Clone)]
 pub struct Config {
-    mimetype: std::collections::HashMap<String, String>,
+    mimetype: HashMap<String, String>,
 }
 
 impl Config {
     pub fn new(path: &PathBuf) -> Self {
         let path_config = path.join("config.toml");
-        let config_str = std::fs::read_to_string(&path_config).unwrap_or_default();
+        let config_str = fs::read_to_string(&path_config).unwrap_or_default();
 
         toml::from_str::<Config>(&config_str).unwrap_or_default()
     }

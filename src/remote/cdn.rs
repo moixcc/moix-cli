@@ -1,31 +1,33 @@
-pub fn handle(path: std::path::PathBuf, args: Vec<String>) -> anyhow::Result<()> {
-    let (url, token) = super::get_env_deploy(&path);
-    let uri = match args.get(3) {
-        Some(u) => u,
-        _ => {
-            println!("moix cdn {} [CDN_PATH_FILE]", path.display());
-            return Ok(());
+use crate::{
+    remote::{delete, get_env_deploy, put_bytes},
+    utils::Config,
+};
+use reqwest::StatusCode;
+use std::{fs, path::PathBuf};
+
+/// moix cdn {put | delete} /[uri..] [./file]
+pub async fn handle(path: PathBuf, action: &str, uri: &str, path_file: Option<&str>) {
+    let (url, token) = get_env_deploy(&path);
+    let url = format!("{}/cdn/{}", url, uri);
+
+    let (status, text) = match action {
+        "put" if path_file.is_some() => {
+            let path_file = PathBuf::from(path_file.unwrap());
+            let config = Config::new(&path);
+            let content_type = config.get_mimetype(&path_file);
+            let body = match fs::read(&path_file) {
+                Ok(bytes) => bytes,
+                _ => {
+                    println!("Error {}", path_file.display());
+                    return;
+                }
+            };
+
+            put_bytes(url.clone(), token, content_type, body).await
         }
+        "delete" => delete(url.clone(), token).await,
+        _ => (StatusCode::BAD_REQUEST, "Error".into()),
     };
-    let config = crate::utils::Config::new(&path);
-    let path_file = path.join("cdn").join(uri);
-    let mimetype = config.get_mimetype(&path_file);
 
-    let file_bytes = std::fs::read(path_file)?;
-    let response = minreq::put(format!("{url}/cdn/{uri}"))
-        .with_header("Authorization", &format!("Bearer {token}"))
-        .with_header("Content-Type", &mimetype)
-        .with_body::<Vec<u8>>(file_bytes)
-        .send()?;
-
-    println!(
-        "{}/cdn/{} | '{}' | {} {}",
-        path.display(),
-        uri,
-        mimetype,
-        response.status_code,
-        response.as_str()?
-    );
-
-    Ok(())
+    println!("{} | {} {}", url, status, text);
 }

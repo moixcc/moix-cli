@@ -1,43 +1,44 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
-pub fn handle(path: std::path::PathBuf) -> anyhow::Result<()> {
-    fs::create_dir_all(&path)?;
+pub const FILES: [&str; 9] = [
+    "data/kipu.sqlite",
+    "index.html",
+    "css/1-style.css",
+    "js/1-script.js",
+    "icons.svg",
+    "templates/not-found.html",
+    "favicon.png",
+    ".gitignore",
+    ".env",
+];
 
-    for dir_name in ["api", "data", "templates", "dist/css", "dist/js"] {
-        let path_dir = path.join(dir_name);
-        fs::create_dir_all(path_dir)?;
-    }
-
-    for file_name in [
-        "dist/index.html",
-        "dist/icons.svg",
-        "dist/js/1_script.js",
-        "dist/css/1_style.css",
-        ".gitignore",
-        ".env",
-    ] {
+/// moix init
+pub fn handle(path: PathBuf) {
+    for file_name in FILES {
         let path_file = path.join(file_name);
 
+        if let Some(path_dir) = path_file.parent() {
+            let _ = fs::create_dir_all(path_dir);
+        }
+
         if !path_file.exists() {
-            fs::write(path_file, get_content(file_name))?;
+            let contents = get_contents(file_name);
+            let _ = fs::write(path_file, contents);
         }
     }
-
-    Ok(())
 }
 
-fn get_content(file_name: &str) -> &'static str {
+fn get_contents(file_name: &str) -> &'static str {
     match file_name {
-        ".env" => "DEPLOY_URL=\"https://api.moix.cc\"\nDEPLOY_TOKEN=\"\"",
-        ".gitignore" => "index.bin\ndata\n.env",
-        "dist/icons.svg" => "<svg style=\"display:none;\"></svg>",
-        "dist/css/1_style.css" => "body{text-align:center;}",
-        "dist/js/1_script.js" => "console.log('WWW.MOIX.CC');",
-        "dist/index.html" => {
-            "<!doctype html><html><head></head>\
-            <body><h1><a href=\"https://moix.cc\">MOIX</a>\
-            </h1></body></html>"
+        "index.html" => "<html><head></head><body><main></main></body></html>",
+        "css/1-style.css" => "*{font-size:inherit;color:inherit;}",
+        "js/1-script.js" => "console.log('MOIX')",
+        "icons.svg" => "<svg style=\"display:none\"></svg>",
+        "templates/not-found.html" => {
+            "<template id=\"template/not-found\"><h1>404</h1><h2>No Found</h2></template>"
         }
+        ".gitignore" => "/index.min.html\ndata\n.env",
+        ".env" => "DEPLOY_URL=\"http://localhost:8080\"\nDEPLOY_TOKEN=\"\"",
         _ => "",
     }
 }

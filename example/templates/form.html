@@ -1,0 +1,19 @@
+<template id="template/form">
+    <a href="/">Back</a>
+
+    <form method="POST" action="/api/form">
+        <fieldset>
+            <legend>POST | application/x-www-form-urlencoded</legend>
+            <input type="email" name="email" value="dev@moix.cc" />
+            <button>Submit</button>
+        </fieldset>
+    </form>
+
+    <form method="POST" action="/api/form" enctype="multipart/form-data">
+        <fieldset>
+            <legend>POST | multipart/form-data</legend>
+            <input type="email" name="email" value="dev@moix.cc" />
+            <button>Submit</button>
+        </fieldset>
+    </form>
+</template>

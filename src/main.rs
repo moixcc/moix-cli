@@ -1,50 +1,30 @@
-mod local;
-mod remote;
-mod utils;
+use moix_cli::*;
+use std::env;
 
-fn main() -> anyhow::Result<()> {
-    let args: Vec<String> = std::env::args().collect();
+#[tokio::main]
+async fn main() {
+    let current_dir = env::current_dir().unwrap();
+    let arguments: Vec<String> = env::args().collect();
+    let option = arguments.get(1).map(|arg| arg.as_str());
+    let arg_one = arguments.get(2).map(|arg| arg.as_str());
+    let arg_two = arguments.get(3).map(|arg| arg.as_str());
+    let arg_three = arguments.get(4).map(|arg| arg.as_str());
 
-    if args.len() < 3 {
-        return help();
-    }
-
-    let option = match args.get(1) {
-        Some(o) => o,
-        _ => return help(),
-    };
-    let path = match args.get(2) {
-        Some(p) => std::path::PathBuf::from(p),
-        _ => return help(),
-    };
-
-    return match option.as_str() {
-        // Local
-        "dev" => local::server::handle(path),
+    match option {
+        // local
+        Some("dev") => local::server::handle(current_dir).await,
         // Remote
-        "deploy" => remote::deploy::handle(path),
-        "cdn" => remote::cdn::handle(path, args),
+        Some("deploy") => remote::deploy::handle(current_dir).await,
+        Some("cdn") if arg_one.is_some() && arg_two.is_some() => {
+            remote::cdn::handle(current_dir, arg_one.unwrap(), arg_two.unwrap(), arg_three).await
+        }
+        Some("api") if arg_one.is_some() && arg_two.is_some() => {
+            remote::api::handle(current_dir, arg_one.unwrap(), arg_two.unwrap(), arg_three).await
+        }
         // Utils
-        "init" => utils::init::handle(path),
-        "build" => utils::build::handle(path),
-        "b64" => utils::b64::handle(path),
+        Some("init") => utils::init::handle(current_dir),
+        Some("build") => utils::build::handle(current_dir),
+        Some("b64") if arg_one.is_some() => utils::b64::encode_path(arg_one.unwrap()),
         _ => help(),
-    };
-}
-
-fn help() -> anyhow::Result<()> {
-    println!(
-        r#"moix OPTION PATH
-
-Options:
-  init   - Create a directory with basic files
-  build  - Generates a compressed file of dist/index.html
-  dev    - Start a web server with port http://localhost:8080"#
-    );
-
-    Ok(())
-}
-
-pub fn exit() {
-    std::process::exit(0);
+    }
 }
