@@ -42,5 +42,5 @@ fn on(req, ctx, db) {
     // on_ref [ Reference ] -> Array<ID>
     for id_entry in db_test.on_ref("reference") {}
 
-    response.json(my_entry)
+    response.ok(my_entry.context)
 }

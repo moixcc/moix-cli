@@ -16,7 +16,7 @@ pub struct ApiDatabase {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Entry {
+pub struct ApiEntry {
     pub id: String,
     pub nature: i64,
     pub quantity: i64,
@@ -104,7 +104,7 @@ impl ApiDatabase {
 
     pub fn get_entry(&mut self, id: &str) -> Dynamic {
         let conn = self.conn.lock().unwrap();
-        let entry: Entry = conn
+        let entry: ApiEntry = conn
             .query_one(
                 &format!(
                     "SELECT id, nature, quantity, context FROM {} WHERE id = ?1 LIMIT 1",
@@ -112,7 +112,7 @@ impl ApiDatabase {
                 ),
                 params![id],
                 |row| {
-                    Ok(Entry {
+                    Ok(ApiEntry {
                         id: row.get(0).unwrap(),
                         nature: row.get(1).unwrap(),
                         quantity: row.get(2).unwrap(),
@@ -192,18 +192,72 @@ impl ApiDatabase {
         metadata
     }
 
-    pub fn set_raw(&mut self, id: &str, raw: Blob) {}
+    pub fn set_raw(&mut self, id: &str, raw: Blob) {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now();
+
+        conn.execute(
+            &format!(
+                "UPDATE {} SET raw = ?2, updated_at = ?3 WHERE id = ?1",
+                self.name
+            ),
+            params![id, raw, now.to_rfc3339()],
+        )
+        .unwrap();
+    }
 
     pub fn get_raw(&mut self, id: &str) -> Blob {
-        Blob::new()
+        let conn = self.conn.lock().unwrap();
+        let raw: Vec<u8> = conn
+            .query_one(
+                &format!("SELECT raw FROM {} WHERE id = ?1 LIMIT 1", self.name),
+                params![id],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        Blob::from(raw)
     }
 
     pub fn on_ctx(&mut self, context: &str) -> Array {
-        Array::new()
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(&format!("SELECT id FROM {} WHERE context = ?1", self.name))
+            .unwrap();
+        let result = stmt
+            .query_map(params![context], |row| row.get::<_, String>(0))
+            .unwrap();
+        let mut list = Array::new();
+
+        for id in result {
+            let id_str = id.unwrap();
+
+            list.push(Dynamic::from(id_str));
+        }
+
+        list
     }
 
     pub fn on_ref(&mut self, reference: &str) -> Array {
-        Array::new()
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(&format!(
+                "SELECT id FROM {} WHERE reference = ?1",
+                self.name
+            ))
+            .unwrap();
+        let result = stmt
+            .query_map(params![reference], |row| row.get::<_, String>(0))
+            .unwrap();
+        let mut list = Array::new();
+
+        for id in result {
+            let id_str = id.unwrap();
+
+            list.push(Dynamic::from(id_str));
+        }
+
+        list
     }
 }
 
@@ -222,5 +276,17 @@ impl CustomType for ApiDatabase {
             .with_fn("get_raw", Self::get_raw)
             .with_fn("on_ctx", Self::on_ctx)
             .with_fn("on_ref", Self::on_ref);
+    }
+}
+
+impl CustomType for ApiEntry {
+    fn build(mut builder: TypeBuilder<Self>) {
+        builder
+            .with_name("Entry")
+            .with_get("id", |entry: &mut ApiEntry| entry.id.clone())
+            .with_get("id", |entry: &mut ApiEntry| entry.id.clone())
+            .with_get("nature", |entry: &mut ApiEntry| entry.nature.clone())
+            .with_get("quantity", |entry: &mut ApiEntry| entry.quantity.clone())
+            .with_get("context", |entry: &mut ApiEntry| entry.context.clone());
     }
 }

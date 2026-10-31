@@ -1,6 +1,14 @@
-use moix_cli::api::database::{ApiDatabase, Entry};
+use axum::{
+    body::{Body, to_bytes},
+    http::Request,
+};
+use moix_cli::{
+    api::database::{ApiDatabase, ApiEntry},
+    local::server,
+};
 use rhai::{Dynamic, Map};
 use std::path::PathBuf;
+use tower::ServiceExt;
 
 #[test]
 fn db_entry() {
@@ -16,8 +24,8 @@ fn db_entry() {
     let my_entry = db_test.get_entry(&id.to_string());
 
     assert_eq!(
-        my_entry.cast::<Entry>(),
-        Entry {
+        my_entry.cast::<ApiEntry>(),
+        ApiEntry {
             id: id.to_string(),
             nature: 0,
             quantity: 1,
@@ -47,8 +55,34 @@ fn db_entry() {
     );
 
     // Raw
+    let raw = b"hello".to_vec();
+
+    db_test.set_raw(&id.to_string(), raw.clone());
+
+    let my_raw = db_test.get_raw(&id.to_string());
+
+    assert_eq!(my_raw, raw);
 
     // Context<ids>
+    let list_ctx = db_test.on_ctx("context");
+
+    assert!(list_ctx.len() > 0);
 
     // Reference<ids>
+    let list_ref = db_test.on_ref("reference");
+
+    assert!(list_ref.len() > 0);
+}
+
+#[tokio::test]
+async fn db_api_entry() {
+    let app = server::router(PathBuf::from("./example"));
+    let response = app
+        .oneshot(Request::get("/api/db").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    let body_bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+
+    assert_eq!(&body_bytes[..], b"context");
 }

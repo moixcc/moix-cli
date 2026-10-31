@@ -3,7 +3,7 @@ pub mod database;
 mod request;
 mod response;
 
-use crate::api::database::ApiDatabase;
+use crate::api::database::{ApiDatabase, ApiEntry};
 use axum::{
     body::{Body, Bytes},
     http::{HeaderMap, StatusCode},
@@ -29,6 +29,7 @@ pub async fn handle(
     engine.build_type::<ApiRequest>();
     engine.build_type::<ApiContext>();
     engine.build_type::<ApiDatabase>();
+    engine.build_type::<ApiEntry>();
 
     let mut scope = Scope::new();
 
