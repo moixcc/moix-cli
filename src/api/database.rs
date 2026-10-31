@@ -1,8 +1,9 @@
 use blake3::Hasher;
 use chrono::Utc;
-use rhai::{CustomType, Dynamic, TypeBuilder};
+use rhai::{Array, Blob, CustomType, Dynamic, Map, TypeBuilder};
 use rusqlite::{Connection, params};
 use std::{
+    collections::HashMap,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -150,6 +151,60 @@ impl ApiDatabase {
 
         Dynamic::from(reference)
     }
+
+    pub fn set_meta(&mut self, id: &str, metadata: Map) {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now();
+        let metadata_map: HashMap<String, String> = metadata
+            .into_iter()
+            .map(|(key, value)| (key.to_string(), value.to_string()))
+            .collect();
+        let metadata_str = serde_json::to_string(&metadata_map).unwrap();
+
+        conn.execute(
+            &format!(
+                "UPDATE {} SET metadata = ?2, updated_at = ?3  WHERE id = ?1",
+                self.name
+            ),
+            params![id, metadata_str, now.to_rfc3339()],
+        )
+        .unwrap();
+    }
+
+    pub fn get_meta(&mut self, id: &str) -> Map {
+        let conn = self.conn.lock().unwrap();
+        let mut metadata = Map::new();
+
+        let result: String = conn
+            .query_one(
+                &format!("SELECT metadata FROM {} WHERE id = ?1 LIMIT 1", self.name),
+                params![id],
+                |row| row.get(0),
+            )
+            .unwrap_or_default();
+
+        if let Ok(data) = serde_json::from_str::<HashMap<String, String>>(&result) {
+            for (key, value) in data {
+                metadata.insert(key.into(), Dynamic::from(value));
+            }
+        };
+
+        metadata
+    }
+
+    pub fn set_raw(&mut self, id: &str, raw: Blob) {}
+
+    pub fn get_raw(&mut self, id: &str) -> Blob {
+        Blob::new()
+    }
+
+    pub fn on_ctx(&mut self, context: &str) -> Array {
+        Array::new()
+    }
+
+    pub fn on_ref(&mut self, reference: &str) -> Array {
+        Array::new()
+    }
 }
 
 impl CustomType for ApiDatabase {
@@ -160,6 +215,12 @@ impl CustomType for ApiDatabase {
             .with_fn("set_entry", Self::set_entry)
             .with_fn("get_entry", Self::get_entry)
             .with_fn("set_ref", Self::set_ref)
-            .with_fn("get_ref", Self::get_ref);
+            .with_fn("get_ref", Self::get_ref)
+            .with_fn("set_meta", Self::set_meta)
+            .with_fn("get_meta", Self::get_meta)
+            .with_fn("set_raw", Self::set_raw)
+            .with_fn("get_raw", Self::get_raw)
+            .with_fn("on_ctx", Self::on_ctx)
+            .with_fn("on_ref", Self::on_ref);
     }
 }

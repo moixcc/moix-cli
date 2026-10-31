@@ -1,9 +1,9 @@
+use moix_cli::api::database::{ApiDatabase, Entry};
+use rhai::{Dynamic, Map};
 use std::path::PathBuf;
 
-use moix_cli::api::database::{ApiDatabase, Entry};
-
 #[test]
-fn db_kipu() {
+fn db_entry() {
     let mut db = ApiDatabase::new(PathBuf::from("./example/data/test.sqlite"));
 
     let mut db_test = db.space("test");
@@ -31,4 +31,24 @@ fn db_kipu() {
     let my_ref = db_test.get_ref(&id.to_string());
 
     assert_eq!(my_ref.to_string(), "reference");
+
+    // Metadata
+    let mut metadata = Map::new();
+
+    metadata.insert("content-type".into(), Dynamic::from("text/plain"));
+
+    db_test.set_meta(&id.to_string(), metadata);
+
+    let my_meta = db_test.get_meta(&id.to_string());
+
+    assert_eq!(
+        my_meta.get("content-type").unwrap().to_string(),
+        "text/plain".to_string()
+    );
+
+    // Raw
+
+    // Context<ids>
+
+    // Reference<ids>
 }
